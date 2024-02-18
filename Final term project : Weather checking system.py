@@ -161,7 +161,7 @@ if(st.button("SUBMIT")):
         st.header(' ')
         st.header(' ')
         st.markdown("Made By Hafiz Muhammad Ubaid ")
-        st.markdown("Helping Parteners Abdullah Tanoli  && Hadii ")
+        st.markdown("BANO QABIL 2.0 PROJECT ")
  
     except KeyError:
         st.error(" Invalid city!!  Please try again !!")
