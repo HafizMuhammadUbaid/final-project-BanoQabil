@@ -1,48 +1,65 @@
 import streamlit as st
-import datetime,requests
-from plotly import graph_objects as go
+import pages
+st.set_page_config(
+    page_title="WEATHER FORECAST BY HMU ✪",
+    page_icon= "cloud",
+)
 
-st.set_page_config(page_title='Hafiz Muhammad Ubaid', page_icon=":rainbow:")
-
-st.title("BANO QABIL WEATHER FORECAST 🌧️🌥️")
-
-city=st.text_input("ENTER THE NAME OF THE CITY ")
-
-unit=st.selectbox("SELECT TEMPERATURE UNIT ",["Celsius","Fahrenheit"])
-
-speed=st.selectbox("SELECT WIND SPEED UNIT ",["Metre/sec","Kilometre/hour"])
-
-graph=st.radio("SELECT GRAPH TYPE ",["Bar Graph","Line Graph"])
-
-page_bg_img = '''
-<style>
-body {
-background-image: url("https://images.unsplash.com/photo-1542281286-9e0a16bb7366");
-background-size: cover;
-}
-</style>
-'''
-
-st.markdown(page_bg_img, unsafe_allow_html=True)
-
-
-if unit=="Celsius":
-    temp_unit=" °C"
-else:
-    temp_unit=" °F"
+def page_home():
     
-if speed=="Kilometre/hour":
-    wind_unit=" km/h"
-else:
-    wind_unit=" m/s"
+    import pages
+    import streamlit as st
+    import datetime,requests
+    from plotly import graph_objects as go
+    from streamlit_option_menu import option_menu
 
-api="9b833c0ea6426b70902aa7a4b1da285c"
-url=f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api}"
-response=requests.get(url)
-x=response.json()
+    def add_bg_from_url():
+     st.markdown(
+         f"""
+         <style>
+         .stApp {{
+             background-image: url("https://images.unsplash.com/photo-1536244636800-a3f74db0f3cf?q=80&w=1992&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+             background-attachment: fixed;
+             background-size: cover
+         }}
+         </style>
+         """,
+         unsafe_allow_html=True
+    )
+
+    add_bg_from_url() 
+
     
-if(st.button("SUBMIT")):
-    try:
+    st.title("WEATHER FORECAST BY HMU⚡")
+
+    city=st.text_input("ENTER THE NAME OF THE CITY ")
+
+    unit=st.selectbox("SELECT TEMPERATURE UNIT ",["Celsius","Fahrenheit"])
+
+    speed=st.selectbox("SELECT WIND SPEED UNIT ",["Metre/sec","Kilometre/hour"])
+
+    graph=st.radio("SELECT GRAPH TYPE ",["Bar Graph","Line Graph"])
+
+   
+
+
+    if unit=="Celsius":
+           temp_unit=" °C"
+    else:
+         temp_unit=" °F"
+    
+    if speed=="Kilometre/hour":
+        wind_unit=" km/h"
+    else:
+     wind_unit=" m/s"
+
+    api="9b833c0ea6426b70902aa7a4b1da285c"
+    url=f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api}"
+    response=requests.get(url)
+    x=response.json()
+    
+    if(st.button("SUBMIT")):
+     try:
         lon=x["coord"]["lon"]
         lat=x["coord"]["lat"]
         ex="current,minutely,hourly"
@@ -160,11 +177,137 @@ if(st.button("SUBMIT")):
         
         st.header(' ')
         st.header(' ')
-        st.markdown("Made By Hafiz Muhammad Ubaid ")
-        st.markdown("BANO QABIL 2.0 PROJECT ")
+        st.markdown("Made By **Hafiz Muhammad Ubaid** ")
+    
  
-    except KeyError:
+     except KeyError:
         st.error(" Invalid city!!  Please try again !!")
+
+
+
+def page_about():
+ st.title("📜ABOUT")
+ 
+ def add_bg_from_url():
+     st.markdown(
+         f"""
+         <style>
+         .stApp {{
+             background-image: url("https://images.pexels.com/photos/207700/pexels-photo-207700.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1");
+             background-attachment: fixed;
+             background-size: cover
+         }}
+         </style>
+         """,
+         unsafe_allow_html=True
+    )
+ 
+ add_bg_from_url() 
+    
+ 
+ st.markdown(
+    """
+      
+ **MY  WEATHER  FORECAST  SERVICE :**
+
+ Welcome to WEATHER FORECAST BY HMU ✪, your go-to destination for accurate and reliable weather forecasts. At WEATHER FORECAST BY HMU ✪, we understand the importance of staying informed about weather conditions, whether you're planning a weekend getaway, scheduling outdoor activities, or simply staying prepared for the day ahead.
+
+ **About the Creator**
+
+ **Hafiz Muhammad Ubaid** , the creator of [WEATHER FORECAST BY HMU ✪], is a passionate weather enthusiast dedicated to providing accurate and accessible weather forecasts to users worldwide.
+
+ **My Mission**
+
+ Our mission is to provide users with up-to-date and precise weather forecasts tailored to their specific location. We aim to empower individuals and businesses with the information they need to make informed decisions, enhance safety measures, and optimize their plans based on weather conditions.
+
+ **What Sets Us Apart**
+
+  **Accuracy**: My forecasts are backed by advanced meteorological models and real-time data sources, ensuring the highest level of accuracy.
+  
+  **Customization**: We offer personalized weather forecasts based on your location, preferences, and specific interests, providing you with relevant and actionable information.
+  
+ **User-Friendly Interface**: My website is designed with simplicity and ease of use in mind, making it effortless for users to access the weather information they need, when they need it.
+
+ **Our Team**
+
+ Behind WEATHER FORECAST BY HMU ✪ is a dedicated team of meteorologists, data analysts, and web developers who are passionate about delivering top-notch weather forecasting services. With years of experience in the field, our team works tirelessly to ensure that our users receive the most reliable and timely weather information.
+
+ **Get in Touch**
+
+ We value feedback from our users as it helps us improve our services. If you have any questions, suggestions, or concerns, please don't hesitate to contact us. You can reach out to our team via email, phone, or through our website's contact form.
+
+ Thank you for choosing [WEATHER FORECAST BY HMU ✪] for your weather forecast needs. We look forward to serving you and helping you stay ahead of the weather!
+ """
+)
+
+
+
+
+ 
+
+ 
+
+
+
+def Page_contact():
+ st.title("📩CONTACT")
+ def add_bg_from_url():
+     st.markdown(
+         f"""
+         <style>
+         .stApp {{
+             background-image: url("https://w0.peakpx.com/wallpaper/117/681/HD-wallpaper-wood-ahsap-black-brown-dark-lumber-madera-papers-wall-woods.jpg");
+             background-attachment: fixed;
+             background-size: cover
+         }}
+         </style>
+         """,
+         unsafe_allow_html=True
+    )
+ 
+ add_bg_from_url() 
+ st.markdown(
+    """
+  **CONTACT INFORMATION**:
+
+ **Instagram**: https://www.instagram.com/muhammadubaid__?igsh=eWV4ejI1MXh0Mndr
+
+ **LinkedIn**: https://www.linkedin.com/in/hafiz-muhammad-ubaid-2b88722b3/ 
+
+ **GitHub**: https://github.com/dashboard
+
+ **Email**: ubaidsajid2006@gmail.com.
+
+ Remember, you can always contact me directly through these Accounts. I're eager to hear from you!
+
+
+
+ """
+)
+ 
+
+def main():
+    st.sidebar.title("☰MENU")
+    page = st.sidebar.radio("Go to", options=["Home","About","Contact"])
+    
+    
+
+
+    if page =="Home":
+       page_home()
+    elif page == "About":
+       page_about()
+    elif page == "Contact":
+       Page_contact()
+
+if __name__ == "__main__":
+    main()
+                       
+
+     
+        
+        
+
 
 
        
