@@ -1,5 +1,4 @@
 import streamlit as st
-import pages
 st.set_page_config(
     page_title="WEATHER FORECAST BY HMU ✪",
     page_icon= "cloud",
