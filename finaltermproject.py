@@ -6,11 +6,11 @@ st.set_page_config(
 
 def page_home():
     
-    import pages
+
     import streamlit as st
     import datetime,requests
     from plotly import graph_objects as go
-    from streamlit_option_menu import option_menu
+ 
 
     def add_bg_from_url():
      st.markdown(
