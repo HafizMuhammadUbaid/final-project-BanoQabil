@@ -13,6 +13,8 @@ def page_home():
     from plotly import graph_objects as go
     from streamlit_option_menu import option_menu
 
+
+
     def add_bg_from_url():
      st.markdown(
          f"""
@@ -178,6 +180,7 @@ def page_home():
         st.header(' ')
         st.header(' ')
         st.markdown("Made By **Hafiz Muhammad Ubaid** ")
+        st.markdown("Partners Abdul Hadi And Abdullah Tanoli")
     
  
      except KeyError:
@@ -270,6 +273,12 @@ def Page_contact():
     """
   **CONTACT INFORMATION**:
 
+
+  
+  Group Leader : Muhammad Ubaid
+
+  Project Partners : Abdul Hadi And Abdullah Tanoli 
+
  **Instagram**: https://www.instagram.com/muhammadubaid__?igsh=eWV4ejI1MXh0Mndr
 
  **LinkedIn**: https://www.linkedin.com/in/hafiz-muhammad-ubaid-2b88722b3/ 
@@ -290,7 +299,8 @@ def main():
     st.sidebar.title("☰MENU")
     page = st.sidebar.radio("Go to", options=["Home","About","Contact"])
     
-    
+    # Company logo
+    st.sidebar.image("icc.jpg", use_column_width=True)
 
 
     if page =="Home":
@@ -302,6 +312,13 @@ def main():
 
 if __name__ == "__main__":
     main()
+                       
+
+     
+        
+        
+
+
                        
 
      
