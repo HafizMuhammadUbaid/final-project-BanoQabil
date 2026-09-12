@@ -13,9 +13,9 @@ st.set_page_config(
 
 # ---------------- CUSTOM CSS & STYLING ----------------
 def apply_custom_styles(bg_url):
-    css_code = f"""
+    css_code = """
     
-    """
+    """.format(bg_url=bg_url)
     st.markdown(css_code, unsafe_allow_html=True)
 
 # ---------------- API HELPER FUNCTIONS ----------------
@@ -135,12 +135,5 @@ def page_home():
         wind_spd = wind_spd / 3.6
     
     st.markdown("---")
-    
-    humidity = curr['relative_humidity_2m']
-    pressure = curr['surface_pressure']
-    curr_temp_val = round(t_curr, 1)
-    feels_temp_val = round(t_feels, 1)
-    wind_spd_val = round(wind_spd, 1)
 
-    card_html = (
-        f'
+    card_html = """
