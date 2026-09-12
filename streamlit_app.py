@@ -70,36 +70,35 @@ def apply_custom_styles(bg_url):
         "    transform: translateY(-2px);",
         "    box-shadow: 0 6px 24px rgba(14, 165, 233, 0.6);",
         "}",
-        ".social-btn {",
+        ".social-icon-btn {",
         "    display: inline-flex;",
         "    align-items: center;",
-        "    gap: 10px;",
-        "    padding: 10px 20px;",
-        "    border-radius: 12px;",
-        "    font-family: 'Poppins', sans-serif;",
-        "    font-weight: 600;",
-        "    font-size: 0.95rem;",
+        "    justify-content: center;",
+        "    width: 50px;",
+        "    height: 50px;",
+        "    border-radius: 50%;",
+        "    font-size: 1.5rem;",
         "    text-decoration: none !important;",
         "    color: #FFFFFF !important;",
         "    transition: all 0.3s ease;",
-        "    margin-right: 12px;",
+        "    margin-right: 15px;",
         "    margin-top: 10px;",
         "}",
-        ".btn-insta {",
+        ".icon-insta {",
         "    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);",
         "    box-shadow: 0 4px 15px rgba(220, 39, 67, 0.35);",
         "}",
-        ".btn-insta:hover {",
-        "    transform: translateY(-3px);",
-        "    box-shadow: 0 6px 20px rgba(220, 39, 67, 0.55);",
+        ".icon-insta:hover {",
+        "    transform: scale(1.15);",
+        "    box-shadow: 0 6px 20px rgba(220, 39, 67, 0.6);",
         "}",
-        ".btn-linkedin {",
+        ".icon-linkedin {",
         "    background: linear-gradient(135deg, #0077B5 0%, #004182 100%);",
         "    box-shadow: 0 4px 15px rgba(0, 119, 181, 0.35);",
         "}",
-        ".btn-linkedin:hover {",
-        "    transform: translateY(-3px);",
-        "    box-shadow: 0 6px 20px rgba(0, 119, 181, 0.55);",
+        ".icon-linkedin:hover {",
+        "    transform: scale(1.15);",
+        "    box-shadow: 0 6px 20px rgba(0, 119, 181, 0.6);",
         "}",
         ".badge {",
         "    display: inline-block;",
@@ -179,6 +178,7 @@ def page_home():
 
     st.title("WEATHER FORECAST ⚡")
 
+    # Search Form
     with st.form(key="search_form"):
         col_search, col_opts1, col_opts2 = st.columns([2.5, 1, 1])
 
@@ -200,7 +200,16 @@ def page_home():
         else:
             st.warning("Please enter a valid city name.")
 
+    # Quick Reset / Search New City Button
+    col_reset, _ = st.columns([1, 3])
+    with col_reset:
+        if st.button("🔄 Reset / Search Another City"):
+            st.session_state["active_city"] = ""
+            st.rerun()
+
     active_city = st.session_state.get("active_city", "Karachi")
+    if not active_city:
+        active_city = "Karachi"
 
     with st.spinner("Fetching live data for " + str(active_city) + "..."):
         geo = geocode_city(active_city)
@@ -359,7 +368,7 @@ def page_about():
         '<hr style="border-color: rgba(255,255,255,0.1);">',
         '<h3>🚀 Advanced Features</h3>',
         '<ul>',
-        '<li><b>Seamless City Search:</b> Instantly toggle between multiple cities without refreshing the browser.</li>',
+        '<li><b>Seamless City Search:</b> Instantly toggle between multiple cities without refreshing the browser manually.</li>',
         '<li><b>Zero API Keys Required:</b> Powered by Open-Meteo\'s open-source meteorological API.</li>',
         '<li><b>Global Geocoding:</b> Auto-detects coordinates for any city worldwide.</li>',
         '<li><b>Interactive Analytics:</b> Glassmorphism UI rendered with Plotly analytics charts.</li>',
@@ -367,10 +376,6 @@ def page_about():
         '<hr style="border-color: rgba(255,255,255,0.1);">',
         '<h3>👨‍💻 Developer</h3>',
         '<p>Designed and engineered by <b>HMU</b>.</p>',
-        '<div style="margin-top: 15px;">',
-        '<a href="' + str(insta_link) + '" target="_blank" class="social-btn btn-insta">📷 Instagram Profile</a>',
-        '<a href="' + str(linkedin_link) + '" target="_blank" class="social-btn btn-linkedin">💼 LinkedIn Profile</a>',
-        '</div>',
         '</div>'
     ]
     st.markdown("".join(about_lines), unsafe_allow_html=True)
@@ -392,9 +397,10 @@ def page_contact():
         '<p style="font-size:1.05rem;"><b>📧 Email:</b> <a href="mailto:ubaidsajid2006@gmail.com" style="color:#38BDF8;">ubaidsajid2006@gmail.com</a></p>',
         '<br>',
         '<h3>🌐 Social Profiles</h3>',
-        '<div style="margin-top: 10px;">',
-        '<a href="' + str(insta_link) + '" target="_blank" class="social-btn btn-insta">📷 @muhammadubaid__</a>',
-        '<a href="' + str(linkedin_link) + '" target="_blank" class="social-btn btn-linkedin">💼 Profile Link</a>',
+        '<p>Click an icon below to visit my profile directly:</p>',
+        '<div style="margin-top: 15px; display: flex; align-items: center;">',
+        '<a href="' + str(insta_link) + '" target="_blank" class="social-icon-btn icon-insta" title="Instagram Profile">📸</a>',
+        '<a href="' + str(linkedin_link) + '" target="_blank" class="social-icon-btn icon-linkedin" title="LinkedIn Profile">💼</a>',
         '</div>',
         '</div>'
     ]
@@ -410,7 +416,7 @@ def main():
     insta_link = "https://www.instagram.com/muhammadubaid__?stkn=eWV4ejI1MXh0Mndr&utm_source=qr"
     linkedin_link = "https://www.linkedin.com/in/muhammad-ubaid-2b88722b3?utm_source=share_via&utm_content=profile&utm_medium=member_ios"
     
-    st.sidebar.markdown("[📷 Instagram Profile](" + str(insta_link) + ")")
+    st.sidebar.markdown("[📸 Instagram Profile](" + str(insta_link) + ")")
     st.sidebar.markdown("[💼 LinkedIn Profile](" + str(linkedin_link) + ")")
 
     if page == "Home":
