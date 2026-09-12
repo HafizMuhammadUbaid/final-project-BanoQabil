@@ -5,7 +5,7 @@ from plotly import graph_objects as go
 
 # ---------------- PAGE CONFIGURATION ----------------
 st.set_page_config(
-    page_title="WEATHER FORECAST BY HMU ✪",
+    page_title="WEATHER FORECAST BY HAFIZ MUHAMMAD UBAID ✪",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -16,7 +16,7 @@ def apply_custom_styles(bg_url):
     css_lines = [
         "<style>",
         "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700;800&display=swap');",
-        "@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');", # FontAwesome Icons Library
+        "@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');",
         ".stApp {",
         "    background: linear-gradient(rgba(10, 15, 29, 0.82), rgba(10, 15, 29, 0.92)), url('" + bg_url + "');",
         "    background-attachment: fixed;",
@@ -85,6 +85,14 @@ def apply_custom_styles(bg_url):
         "    margin-right: 15px;",
         "    margin-top: 10px;",
         "}",
+        ".icon-email {",
+        "    background: linear-gradient(135deg, #EA4335 0%, #C5221F 100%);",
+        "    box-shadow: 0 4px 15px rgba(234, 67, 53, 0.35);",
+        "}",
+        ".icon-email:hover {",
+        "    transform: scale(1.15);",
+        "    box-shadow: 0 6px 22px rgba(234, 67, 53, 0.65);",
+        "}",
         ".icon-insta {",
         "    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);",
         "    box-shadow: 0 4px 15px rgba(220, 39, 67, 0.35);",
@@ -101,18 +109,9 @@ def apply_custom_styles(bg_url):
         "    transform: scale(1.15);",
         "    box-shadow: 0 6px 22px rgba(10, 102, 194, 0.65);",
         "}",
-        ".sidebar-link {",
-        "    display: flex;",
-        "    align-items: center;",
-        "    gap: 10px;",
-        "    color: #38BDF8 !important;",
-        "    text-decoration: none !important;",
-        "    font-weight: 500;",
-        "    margin-bottom: 8px;",
-        "    transition: color 0.2s ease;",
-        "}",
-        ".sidebar-link:hover {",
-        "    color: #7DD3FC !important;",
+        "section[data-testid='stSidebar'] {",
+        "    background: rgba(10, 15, 29, 0.85) !important;",
+        "    border-right: 1px solid rgba(255, 255, 255, 0.1);",
         "}",
         ".badge {",
         "    display: inline-block;",
@@ -192,7 +191,6 @@ def page_home():
 
     st.title("WEATHER FORECAST ⚡")
 
-    # Search Form
     with st.form(key="search_form"):
         col_search, col_opts1, col_opts2 = st.columns([2.5, 1, 1])
 
@@ -214,7 +212,6 @@ def page_home():
         else:
             st.warning("Please enter a valid city name.")
 
-    # Quick Reset / Search New City Button
     col_reset, _ = st.columns([1, 3])
     with col_reset:
         if st.button("🔄 Reset / Search Another City"):
@@ -364,7 +361,7 @@ def page_home():
             hide_index=True
         )
 
-    st.caption("Crafted by **HMU** | Powered by Open-Meteo Meteorological API")
+    st.caption("Crafted by **Hafiz Muhammad Ubaid** | Powered by Open-Meteo Meteorological API")
 
 # ---------------- PAGE: ABOUT ----------------
 def page_about():
@@ -374,8 +371,8 @@ def page_about():
     
     about_lines = [
         '<div class="glass-card">',
-        '<h2>WEATHER FORECAST BY HMU ✪</h2>',
-        '<p>Welcome to <b>WEATHER FORECAST BY HMU ✪</b> — a modern, interactive weather tracking platform designed to offer high-precision, real-time meteorological insight for cities across the globe.</p>',
+        '<h2>WEATHER FORECAST BY HAFIZ MUHAMMAD UBAID ✪</h2>',
+        '<p>Welcome to <b>WEATHER FORECAST BY HAFIZ MUHAMMAD UBAID ✪</b> — a modern, interactive weather tracking platform designed to offer high-precision, real-time meteorological insight for cities across the globe.</p>',
         '<hr style="border-color: rgba(255,255,255,0.1);">',
         '<h3>🚀 Advanced Features</h3>',
         '<ul>',
@@ -386,7 +383,7 @@ def page_about():
         '</ul>',
         '<hr style="border-color: rgba(255,255,255,0.1);">',
         '<h3>👨‍💻 Developer</h3>',
-        '<p>Designed and engineered by <b>HMU</b>.</p>',
+        '<p>Designed and engineered by <b>Hafiz Muhammad Ubaid</b>.</p>',
         '</div>'
     ]
     st.markdown("".join(about_lines), unsafe_allow_html=True)
@@ -397,19 +394,19 @@ def page_contact():
 
     st.title("📩 CONNECT WITH ME")
     
+    email_address = "ubaidsajid2006@gmail.com"
     insta_link = "https://www.instagram.com/muhammadubaid__?stkn=eWV4ejI1MXh0Mndr&utm_source=qr"
     linkedin_link = "https://www.linkedin.com/in/muhammad-ubaid-2b88722b3?utm_source=share_via&utm_content=profile&utm_medium=member_ios"
 
     contact_lines = [
         '<div class="glass-card">',
-        '<h2>HMU</h2>',
-        '<p>Feel free to reach out for collaborations, feedback, or development inquiries!</p>',
-        '<br>',
-        '<p style="font-size:1.05rem;"><b>📧 Email:</b> <a href="mailto:ubaidsajid2006@gmail.com" style="color:#38BDF8;">ubaidsajid2006@gmail.com</a></p>',
-        '<br>',
-        '<h3>🌐 Social Profiles</h3>',
-        '<p>Click an icon below to visit my profile directly:</p>',
-        '<div style="margin-top: 15px; display: flex; align-items: center;">',
+        '<h2>Hafiz Muhammad Ubaid</h2>',
+        '<p style="font-size: 1.05rem; color: #CBD5E1 !important;">Feel free to reach out for collaborations, feedback, or development inquiries!</p>',
+        '<hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">',
+        '<h3>🌐 Contact & Social Profiles</h3>',
+        '<p style="color: #94A3B8 !important;">Click any button below to email me or connect directly on my socials:</p>',
+        '<div style="margin-top: 20px; display: flex; align-items: center; gap: 10px;">',
+        '<a href="mailto:' + str(email_address) + '" class="social-icon-btn icon-email" title="Send Email"><i class="fa-solid fa-envelope"></i></a>',
         '<a href="' + str(insta_link) + '" target="_blank" class="social-icon-btn icon-insta" title="Instagram Profile"><i class="fa-brands fa-instagram"></i></a>',
         '<a href="' + str(linkedin_link) + '" target="_blank" class="social-icon-btn icon-linkedin" title="LinkedIn Profile"><i class="fa-brands fa-linkedin-in"></i></a>',
         '</div>',
@@ -419,19 +416,18 @@ def page_contact():
 
 # ---------------- MAIN ROUTER ----------------
 def main():
-    st.sidebar.title("☰ NAVIGATION")
-    page = st.sidebar.radio("Navigate to", ["Home", "About", "Contact"])
-
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("### 🔗 Quick Links")
-    insta_link = "https://www.instagram.com/muhammadubaid__?stkn=eWV4ejI1MXh0Mndr&utm_source=qr"
-    linkedin_link = "https://www.linkedin.com/in/muhammad-ubaid-2b88722b3?utm_source=share_via&utm_content=profile&utm_medium=member_ios"
+    st.sidebar.markdown("""
+        <div style="text-align: center; padding: 10px 0 20px 0;">
+            <h2 style="margin:0; font-size: 1.4rem; color: #38BDF8 !important;">🌤️ WEATHER APP</h2>
+            <p style="font-size: 0.8rem; color: #94A3B8 !important; margin-top: 4px;">by Hafiz Muhammad Ubaid</p>
+        </div>
+    """, unsafe_allow_html=True)
     
-    sidebar_html = [
-        '<a href="' + str(insta_link) + '" target="_blank" class="sidebar-link"><i class="fa-brands fa-instagram"></i> Instagram Profile</a>',
-        '<a href="' + str(linkedin_link) + '" target="_blank" class="sidebar-link"><i class="fa-brands fa-linkedin"></i> LinkedIn Profile</a>'
-    ]
-    st.sidebar.markdown("\n".join(sidebar_html), unsafe_allow_html=True)
+    page = st.sidebar.radio(
+        "NAVIGATION", 
+        ["Home", "About", "Contact"],
+        format_func=lambda x: f"🏠  {x}" if x == "Home" else (f"ℹ️  {x}" if x == "About" else f"📩  {x}")
+    )
 
     if page == "Home":
         page_home()
