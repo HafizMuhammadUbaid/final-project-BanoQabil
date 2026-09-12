@@ -15,84 +15,82 @@ st.set_page_config(
 def apply_custom_styles(bg_url):
     css_lines = [
         "<style>",
-        "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700;800&display=swap');",
+        "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700;800;900&display=swap');",
         "@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');",
         
-        "# Main Background",
+        "# Background",
         ".stApp {",
-        "    background: linear-gradient(rgba(10, 15, 29, 0.85), rgba(10, 15, 29, 0.93)), url('" + bg_url + "');",
+        "    background: linear-gradient(rgba(10, 15, 29, 0.88), rgba(10, 15, 29, 0.95)), url('" + bg_url + "');",
         "    background-attachment: fixed;",
         "    background-size: cover;",
         "    background-position: center;",
         "    font-family: 'Inter', sans-serif;",
         "}",
         
-        "# Hide Streamlit Default Sidebar",
+        "# Hide Sidebar Completely",
         "section[data-testid='stSidebar'] {",
         "    display: none !important;",
         "}",
         
-        "# Top Header & Branding",
-        ".top-header-container {",
-        "    background: rgba(15, 23, 42, 0.7);",
-        "    backdrop-filter: blur(16px);",
-        "    -webkit-backdrop-filter: blur(16px);",
-        "    border: 1px solid rgba(255, 255, 255, 0.1);",
-        "    border-radius: 20px;",
-        "    padding: 20px 30px;",
-        "    margin-bottom: 25px;",
-        "    display: flex;",
-        "    justify-content: space-between;",
-        "    align-items: center;",
-        "    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);",
+        "# Top Main Header Branding",
+        ".main-header-box {",
+        "    text-align: center;",
+        "    padding: 25px 10px 15px 10px;",
+        "    margin-bottom: 20px;",
         "}",
-        ".top-header-title {",
-        "    font-family: 'Poppins', sans-serif;",
-        "    font-weight: 800;",
-        "    font-size: 1.8rem;",
-        "    color: #38BDF8 !important;",
-        "    margin: 0;",
-        "    letter-spacing: 1px;",
+        ".main-title {",
+        "    font-family: 'Poppins', sans-serif !important;",
+        "    font-weight: 900 !important;",
+        "    font-size: 3.2rem !important;",
+        "    letter-spacing: 2.5px !important;",
+        "    background: linear-gradient(135deg, #38BDF8 0%, #0EA5E9 50%, #2563EB 100%);",
+        "    -webkit-background-clip: text;",
+        "    -webkit-text-fill-color: transparent;",
+        "    margin: 0 !important;",
+        "    text-transform: uppercase;",
+        "    text-shadow: 0 10px 30px rgba(56, 189, 248, 0.3);",
         "}",
-        ".top-header-sub {",
-        "    font-size: 0.9rem;",
+        ".main-subtitle {",
+        "    font-family: 'Poppins', sans-serif !important;",
+        "    font-size: 1.1rem !important;",
+        "    font-weight: 500 !important;",
         "    color: #94A3B8 !important;",
-        "    margin: 0;",
-        "    font-weight: 500;",
+        "    margin-top: 4px !important;",
+        "    letter-spacing: 1px !important;",
         "}",
 
-        "# Streamlit Top Navigation Tabs Styling",
-        "div[data-baseweb='tab-list'] {",
-        "    gap: 12px !important;",
-        "    background: rgba(255, 255, 255, 0.03) !important;",
-        "    padding: 8px 12px !important;",
+        "# Navigation Columns Alignment",
+        "div[data-testid='column'] .stButton > button {",
+        "    width: 100% !important;",
+        "    height: 60px !important;",
+        "    font-size: 1.25rem !important;",
+        "    font-weight: 700 !important;",
+        "    letter-spacing: 1px !important;",
         "    border-radius: 16px !important;",
-        "    border: 1px solid rgba(255, 255, 255, 0.08) !important;",
-        "    margin-bottom: 30px !important;",
+        "    background: rgba(255, 255, 255, 0.05) !important;",
+        "    border: 1px solid rgba(255, 255, 255, 0.12) !important;",
+        "    color: #E2E8F0 !important;",
+        "    backdrop-filter: blur(12px) !important;",
+        "    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;",
+        "    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;",
         "}",
-        "button[data-baseweb='tab'] {",
-        "    height: 50px !important;",
-        "    background: transparent !important;",
-        "    border-radius: 12px !important;",
-        "    color: #94A3B8 !important;",
-        "    font-family: 'Poppins', sans-serif !important;",
-        "    font-weight: 600 !important;",
-        "    font-size: 1.05rem !important;",
-        "    border: none !important;",
-        "    padding: 0 28px !important;",
-        "    transition: all 0.3s ease !important;",
-        "}",
-        "button[data-baseweb='tab']:hover {",
-        "    color: #38BDF8 !important;",
-        "    background: rgba(56, 189, 248, 0.08) !important;",
-        "}",
-        "button[aria-selected='true'] {",
+        "div[data-testid='column'] .stButton > button:hover {",
         "    background: linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%) !important;",
         "    color: #FFFFFF !important;",
-        "    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.4) !important;",
+        "    border-color: #38BDF8 !important;",
+        "    transform: translateY(-3px) scale(1.02) !important;",
+        "    box-shadow: 0 8px 25px rgba(14, 165, 233, 0.45) !important;",
         "}",
 
-        "# Glass Cards & Typography",
+        "# Active Navigation Button Highlight",
+        ".nav-active button {",
+        "    background: linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%) !important;",
+        "    color: #FFFFFF !important;",
+        "    border-color: #38BDF8 !important;",
+        "    box-shadow: 0 8px 25px rgba(14, 165, 233, 0.5) !important;",
+        "}",
+
+        "# Glass Cards & Layout elements",
         "h1, h2, h3, h4, h5, h6 {",
         "    font-family: 'Poppins', sans-serif !important;",
         "    color: #FFFFFF !important;",
@@ -121,38 +119,20 @@ def apply_custom_styles(bg_url):
         "    border-radius: 18px !important;",
         "    padding: 20px !important;",
         "}",
-        ".stButton > button {",
-        "    width: 100%;",
-        "    background: linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%);",
-        "    color: #FFFFFF !important;",
-        "    font-family: 'Poppins', sans-serif;",
-        "    font-weight: 600;",
-        "    font-size: 1rem;",
-        "    border: none;",
-        "    border-radius: 12px;",
-        "    padding: 0.75rem 1rem;",
-        "    transition: all 0.3s ease;",
-        "    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.4);",
-        "}",
-        ".stButton > button:hover {",
-        "    background: linear-gradient(135deg, #38BDF8 0%, #1D4ED8 100%);",
-        "    transform: translateY(-2px);",
-        "    box-shadow: 0 6px 24px rgba(14, 165, 233, 0.6);",
-        "}",
 
-        "# Contact Social Icons",
+        "# Social Media Contact Buttons",
         ".social-icon-btn {",
         "    display: inline-flex;",
         "    align-items: center;",
         "    justify-content: center;",
-        "    width: 55px;",
-        "    height: 55px;",
+        "    width: 60px;",
+        "    height: 60px;",
         "    border-radius: 50%;",
-        "    font-size: 1.6rem;",
+        "    font-size: 1.8rem;",
         "    text-decoration: none !important;",
         "    color: #FFFFFF !important;",
         "    transition: all 0.3s ease;",
-        "    margin-right: 15px;",
+        "    margin-right: 18px;",
         "    margin-top: 10px;",
         "}",
         ".icon-email {",
@@ -468,30 +448,52 @@ def render_contact():
     ]
     st.markdown("".join(contact_lines), unsafe_allow_html=True)
 
-# ---------------- MAIN APP ----------------
+# ---------------- MAIN APP ROUTER ----------------
 def main():
     apply_custom_styles("https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=1920&q=80")
 
-    # Top Brand Header Navbar
+    # State Management for Navigation
+    if "current_page" not in st.session_state:
+        st.session_state["current_page"] = "Home"
+
+    # Main Bold Header Title & Subtitle
     st.markdown("""
-        <div class="top-header-container">
-            <div>
-                <p class="top-header-title">WEATHER FORECAST</p>
-                <p class="top-header-sub">By Hafiz Muhammad Ubaid</p>
-            </div>
+        <div class="main-header-box">
+            <h1 class="main-title">WEATHER FORECAST</h1>
+            <p class="main-subtitle">By Hafiz Muhammad Ubaid</p>
         </div>
     """, unsafe_allow_html=True)
 
-    # Top Modern Navigation Tabs
-    tab_home, tab_about, tab_contact = st.tabs(["Home", "About", "Contact"])
+    # Wide Spaced Spaced Top Navigation Bar
+    c_left, _, c_center, _, c_right = st.columns([2.5, 1, 2.5, 1, 2.5])
 
-    with tab_home:
+    with c_left:
+        btn_home = st.button("HOME", key="nav_home_btn")
+        if btn_home:
+            st.session_state["current_page"] = "Home"
+            st.rerun()
+
+    with c_center:
+        btn_about = st.button("ABOUT", key="nav_about_btn")
+        if btn_about:
+            st.session_state["current_page"] = "About"
+            st.rerun()
+
+    with c_right:
+        btn_contact = st.button("CONTACT", key="nav_contact_btn")
+        if btn_contact:
+            st.session_state["current_page"] = "Contact"
+            st.rerun()
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Render Active Page Based on Navigation State
+    curr_page = st.session_state["current_page"]
+    if curr_page == "Home":
         render_home()
-
-    with tab_about:
+    elif curr_page == "About":
         render_about()
-
-    with tab_contact:
+    elif curr_page == "Contact":
         render_contact()
 
 if __name__ == "__main__":
