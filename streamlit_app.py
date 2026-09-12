@@ -1,4 +1,4 @@
-```python
+
 import streamlit as st
 import datetime
 import requests
@@ -600,5 +600,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-```
 
