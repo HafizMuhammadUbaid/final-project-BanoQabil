@@ -8,7 +8,7 @@ st.set_page_config(
     page_title="WEATHER FORECAST BY HAFIZ MUHAMMAD UBAID ✪",
     page_icon="⚡",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # ---------------- CUSTOM CSS & STYLING ----------------
@@ -17,17 +17,85 @@ def apply_custom_styles(bg_url):
         "<style>",
         "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700;800&display=swap');",
         "@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');",
+        
+        "# Main Background",
         ".stApp {",
-        "    background: linear-gradient(rgba(10, 15, 29, 0.82), rgba(10, 15, 29, 0.92)), url('" + bg_url + "');",
+        "    background: linear-gradient(rgba(10, 15, 29, 0.85), rgba(10, 15, 29, 0.93)), url('" + bg_url + "');",
         "    background-attachment: fixed;",
         "    background-size: cover;",
         "    background-position: center;",
         "    font-family: 'Inter', sans-serif;",
         "}",
+        
+        "# Hide Streamlit Default Sidebar",
+        "section[data-testid='stSidebar'] {",
+        "    display: none !important;",
+        "}",
+        
+        "# Top Header & Branding",
+        ".top-header-container {",
+        "    background: rgba(15, 23, 42, 0.7);",
+        "    backdrop-filter: blur(16px);",
+        "    -webkit-backdrop-filter: blur(16px);",
+        "    border: 1px solid rgba(255, 255, 255, 0.1);",
+        "    border-radius: 20px;",
+        "    padding: 20px 30px;",
+        "    margin-bottom: 25px;",
+        "    display: flex;",
+        "    justify-content: space-between;",
+        "    align-items: center;",
+        "    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);",
+        "}",
+        ".top-header-title {",
+        "    font-family: 'Poppins', sans-serif;",
+        "    font-weight: 800;",
+        "    font-size: 1.8rem;",
+        "    color: #38BDF8 !important;",
+        "    margin: 0;",
+        "    letter-spacing: 1px;",
+        "}",
+        ".top-header-sub {",
+        "    font-size: 0.9rem;",
+        "    color: #94A3B8 !important;",
+        "    margin: 0;",
+        "    font-weight: 500;",
+        "}",
+
+        "# Streamlit Top Navigation Tabs Styling",
+        "div[data-baseweb='tab-list'] {",
+        "    gap: 12px !important;",
+        "    background: rgba(255, 255, 255, 0.03) !important;",
+        "    padding: 8px 12px !important;",
+        "    border-radius: 16px !important;",
+        "    border: 1px solid rgba(255, 255, 255, 0.08) !important;",
+        "    margin-bottom: 30px !important;",
+        "}",
+        "button[data-baseweb='tab'] {",
+        "    height: 50px !important;",
+        "    background: transparent !important;",
+        "    border-radius: 12px !important;",
+        "    color: #94A3B8 !important;",
+        "    font-family: 'Poppins', sans-serif !important;",
+        "    font-weight: 600 !important;",
+        "    font-size: 1.05rem !important;",
+        "    border: none !important;",
+        "    padding: 0 28px !important;",
+        "    transition: all 0.3s ease !important;",
+        "}",
+        "button[data-baseweb='tab']:hover {",
+        "    color: #38BDF8 !important;",
+        "    background: rgba(56, 189, 248, 0.08) !important;",
+        "}",
+        "button[aria-selected='true'] {",
+        "    background: linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%) !important;",
+        "    color: #FFFFFF !important;",
+        "    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.4) !important;",
+        "}",
+
+        "# Glass Cards & Typography",
         "h1, h2, h3, h4, h5, h6 {",
         "    font-family: 'Poppins', sans-serif !important;",
         "    color: #FFFFFF !important;",
-        "    letter-spacing: 0.5px;",
         "}",
         "p, label, span, div {",
         "    color: #E2E8F0 !important;",
@@ -71,6 +139,8 @@ def apply_custom_styles(bg_url):
         "    transform: translateY(-2px);",
         "    box-shadow: 0 6px 24px rgba(14, 165, 233, 0.6);",
         "}",
+
+        "# Contact Social Icons",
         ".social-icon-btn {",
         "    display: inline-flex;",
         "    align-items: center;",
@@ -108,37 +178,6 @@ def apply_custom_styles(bg_url):
         ".icon-linkedin:hover {",
         "    transform: scale(1.15);",
         "    box-shadow: 0 6px 22px rgba(10, 102, 194, 0.65);",
-        "}",
-        "section[data-testid='stSidebar'] {",
-        "    background: rgba(10, 15, 29, 0.92) !important;",
-        "    border-right: 1px solid rgba(255, 255, 255, 0.08);",
-        "}",
-        "div[data-testid='stSidebarUserContent'] {",
-        "    padding-top: 1.5rem;",
-        "}",
-        "div[role='radiogroup'] {",
-        "    gap: 10px;",
-        "}",
-        "div[role='radiogroup'] label {",
-        "    background: rgba(255, 255, 255, 0.03) !important;",
-        "    border: 1px solid rgba(255, 255, 255, 0.08) !important;",
-        "    border-radius: 12px !important;",
-        "    padding: 12px 16px !important;",
-        "    transition: all 0.3s ease !important;",
-        "    cursor: pointer !important;",
-        "}",
-        "div[role='radiogroup'] label:hover {",
-        "    background: rgba(56, 189, 248, 0.1) !important;",
-        "    border-color: rgba(56, 189, 248, 0.3) !important;",
-        "}",
-        "div[role='radiogroup'] label[data-checked='true'] {",
-        "    background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(37, 99, 235, 0.2) 100%) !important;",
-        "    border-color: #38BDF8 !important;",
-        "    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.2) !important;",
-        "}",
-        "div[role='radiogroup'] label span {",
-        "    font-weight: 600 !important;",
-        "    letter-spacing: 0.5px !important;",
         "}",
         ".badge {",
         "    display: inline-block;",
@@ -212,12 +251,8 @@ def decode_wmo_code(code):
     }
     return mapping.get(code, ("Unknown", "🌡️"))
 
-# ---------------- PAGE: HOME ----------------
-def page_home():
-    apply_custom_styles("https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=1920&q=80")
-
-    st.title("WEATHER FORECAST ⚡")
-
+# ---------------- PAGE CONTENT: HOME ----------------
+def render_home():
     with st.form(key="search_form"):
         col_search, col_opts1, col_opts2 = st.columns([2.5, 1, 1])
 
@@ -249,7 +284,7 @@ def page_home():
     if not active_city:
         active_city = "Karachi"
 
-    with st.spinner("Fetching live data for " + str(active_city) + "..."):
+    with st.spinner("Fetching live weather data for " + str(active_city) + "..."):
         geo = geocode_city(active_city)
         if not geo:
             st.error("Could not find coordinates for '" + str(active_city) + "'. Please enter a valid city name.")
@@ -390,12 +425,8 @@ def page_home():
 
     st.caption("Crafted by **Hafiz Muhammad Ubaid** | Powered by Open-Meteo Meteorological API")
 
-# ---------------- PAGE: ABOUT ----------------
-def page_about():
-    apply_custom_styles("https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&w=1920&q=80")
-
-    st.title("📜 ABOUT THE PROJECT")
-    
+# ---------------- PAGE CONTENT: ABOUT ----------------
+def render_about():
     about_lines = [
         '<div class="glass-card">',
         '<h2>WEATHER FORECAST BY HAFIZ MUHAMMAD UBAID ✪</h2>',
@@ -415,12 +446,8 @@ def page_about():
     ]
     st.markdown("".join(about_lines), unsafe_allow_html=True)
 
-# ---------------- PAGE: CONTACT ----------------
-def page_contact():
-    apply_custom_styles("https://images.unsplash.com/photo-1516912481808-3406841bd33c?auto=format&fit=crop&w=1920&q=80")
-
-    st.title("📩 CONNECT WITH ME")
-    
+# ---------------- PAGE CONTENT: CONTACT ----------------
+def render_contact():
     email_address = "ubaidsajid2006@gmail.com"
     insta_link = "https://www.instagram.com/muhammadubaid__?stkn=eWV4ejI1MXh0Mndr&utm_source=qr"
     linkedin_link = "https://www.linkedin.com/in/muhammad-ubaid-2b88722b3?utm_source=share_via&utm_content=profile&utm_medium=member_ios"
@@ -441,26 +468,31 @@ def page_contact():
     ]
     st.markdown("".join(contact_lines), unsafe_allow_html=True)
 
-# ---------------- MAIN ROUTER ----------------
+# ---------------- MAIN APP ----------------
 def main():
-    st.sidebar.markdown("""
-        <div style="padding: 10px 0 25px 0; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px;">
-            <h2 style="margin:0; font-size: 1.3rem; letter-spacing: 1px; color: #38BDF8 !important;">WEATHER APP</h2>
-            <p style="font-size: 0.8rem; color: #94A3B8 !important; margin-top: 4px;">By Hafiz Muhammad Ubaid</p>
+    apply_custom_styles("https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=1920&q=80")
+
+    # Top Brand Header Navbar
+    st.markdown("""
+        <div class="top-header-container">
+            <div>
+                <p class="top-header-title">WEATHER FORECAST</p>
+                <p class="top-header-sub">By Hafiz Muhammad Ubaid</p>
+            </div>
         </div>
     """, unsafe_allow_html=True)
-    
-    page = st.sidebar.radio(
-        "NAVIGATION", 
-        ["Home", "About", "Contact"]
-    )
 
-    if page == "Home":
-        page_home()
-    elif page == "About":
-        page_about()
-    else:
-        page_contact()
+    # Top Modern Navigation Tabs
+    tab_home, tab_about, tab_contact = st.tabs(["Home", "About", "Contact"])
+
+    with tab_home:
+        render_home()
+
+    with tab_about:
+        render_about()
+
+    with tab_contact:
+        render_contact()
 
 if __name__ == "__main__":
     main()
