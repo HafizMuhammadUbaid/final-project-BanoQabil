@@ -1,7 +1,10 @@
 import streamlit as st
 import datetime
 import requests
+from collections import defaultdict
 from plotly import graph_objects as go
+
+OWM_BASE = "https://api.openweathermap.org"
 
 # ---------------- PAGE CONFIGURATION ----------------
 st.set_page_config(
@@ -292,29 +295,56 @@ def apply_custom_styles(bg_url):
     ]
     st.markdown("\n".join(css_lines), unsafe_allow_html=True)
 
+# ---------------- API KEY HANDLING ----------------
+def get_api_key():
+    """Resolve the OpenWeatherMap API key from st.secrets first, then a sidebar field."""
+    secret_key = ""
+    try:
+        secret_key = st.secrets.get("OPENWEATHER_API_KEY", "")
+    except Exception:
+        secret_key = ""
+
+    if secret_key:
+        return secret_key.strip()
+
+    st.sidebar.markdown('<p class="nav-caption">API Key</p>', unsafe_allow_html=True)
+    entered_key = st.sidebar.text_input(
+        "OpenWeatherMap API Key",
+        value=st.session_state.get("owm_api_key", ""),
+        type="password",
+        placeholder="Paste your free OpenWeatherMap key",
+        label_visibility="collapsed"
+    )
+    st.session_state["owm_api_key"] = entered_key.strip()
+    st.sidebar.caption("Get a free key at openweathermap.org/api")
+    return entered_key.strip()
+
 # ---------------- API HELPER FUNCTIONS ----------------
 @st.cache_data(ttl=1800)
-def geocode_city(city_name):
+def geocode_city(city_name, api_key):
     city_name = str(city_name).strip()
-    url = "https://geocoding-api.open-meteo.com/v1/search?name=" + str(city_name) + "&count=1&language=en&format=json"
+    url = OWM_BASE + "/geo/1.0/direct?q=" + str(city_name) + "&limit=1&appid=" + str(api_key)
     try:
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
-            results = response.json().get("results")
+            results = response.json()
             if results:
-                return results[0]
+                item = results[0]
+                return {
+                    "latitude": item["lat"],
+                    "longitude": item["lon"],
+                    "name": item.get("name", city_name),
+                    "country": item.get("country", "")
+                }
     except Exception:
         pass
     return None
 
-@st.cache_data(ttl=900)
-def fetch_weather_data(lat, lon):
+@st.cache_data(ttl=600)
+def fetch_current_weather(lat, lon, api_key, units):
     url = (
-        "https://api.open-meteo.com/v1/forecast?latitude=" + str(lat) + "&longitude=" + str(lon) +
-        "&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,weather_code,surface_pressure,wind_speed_10m"
-        "&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,weather_code"
-        "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max"
-        "&timezone=auto"
+        OWM_BASE + "/data/2.5/weather?lat=" + str(lat) + "&lon=" + str(lon) +
+        "&units=" + str(units) + "&appid=" + str(api_key)
     )
     try:
         res = requests.get(url, timeout=10)
@@ -324,30 +354,68 @@ def fetch_weather_data(lat, lon):
         pass
     return None
 
-def decode_wmo_code(code):
+@st.cache_data(ttl=900)
+def fetch_forecast(lat, lon, api_key, units):
+    url = (
+        OWM_BASE + "/data/2.5/forecast?lat=" + str(lat) + "&lon=" + str(lon) +
+        "&units=" + str(units) + "&appid=" + str(api_key)
+    )
+    try:
+        res = requests.get(url, timeout=10)
+        if res.status_code == 200:
+            return res.json()
+    except Exception:
+        pass
+    return None
+
+@st.cache_data(ttl=1800)
+def fetch_uv_index(lat, lon, api_key):
+    url = OWM_BASE + "/data/2.5/uvi?lat=" + str(lat) + "&lon=" + str(lon) + "&appid=" + str(api_key)
+    try:
+        res = requests.get(url, timeout=10)
+        if res.status_code == 200:
+            return res.json().get("value")
+    except Exception:
+        pass
+    return None
+
+def decode_owm_icon(icon_code, description):
+    prefix = str(icon_code)[:2] if icon_code else ""
     mapping = {
-        0: ("Clear Sky", "☀️"),
-        1: ("Mainly Clear", "🌤️"),
-        2: ("Partly Cloudy", "⛅"),
-        3: ("Overcast", "☁️"),
-        45: ("Foggy", "🌫️"),
-        48: ("Depositing Rime Fog", "🌫️"),
-        51: ("Light Drizzle", "🌦️"),
-        53: ("Moderate Drizzle", "🌧️"),
-        55: ("Dense Drizzle", "🌧️"),
-        61: ("Slight Rain", "🌧️"),
-        63: ("Moderate Rain", "🌧️"),
-        65: ("Heavy Rain", "⛈️"),
-        71: ("Slight Snow", "🌨️"),
-        73: ("Moderate Snow", "❄️"),
-        75: ("Heavy Snow", "❄️"),
-        80: ("Rain Showers", "🌦️"),
-        81: ("Moderate Rain Showers", "🌧️"),
-        82: ("Violent Rain Showers", "⛈️"),
-        95: ("Thunderstorm", "🌩️"),
-        96: ("Thunderstorm with Hail", "⛈️"),
+        "01": "☀️",
+        "02": "🌤️",
+        "03": "⛅",
+        "04": "☁️",
+        "09": "🌧️",
+        "10": "🌦️",
+        "11": "🌩️",
+        "13": "❄️",
+        "50": "🌫️",
     }
-    return mapping.get(code, ("Unknown", "🌡️"))
+    icon = mapping.get(prefix, "🌡️")
+    label = str(description).title() if description else "Unknown"
+    return label, icon
+
+def wind_direction_label(deg):
+    if deg is None:
+        return "N/A"
+    dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+            "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+    idx = round(float(deg) / 22.5) % 16
+    return dirs[idx]
+
+def uv_risk_label(uv_value):
+    if uv_value is None:
+        return "N/A"
+    if uv_value < 3:
+        return "Low"
+    if uv_value < 6:
+        return "Moderate"
+    if uv_value < 8:
+        return "High"
+    if uv_value < 11:
+        return "Very High"
+    return "Extreme"
 
 # ---------------- PAGE: HOME ----------------
 def page_home():
@@ -355,6 +423,11 @@ def page_home():
 
     st.markdown('<div class="hero-title">Weather Forecast</div>', unsafe_allow_html=True)
     st.markdown('<div class="hero-subtitle">Live meteorological intelligence, refined</div>', unsafe_allow_html=True)
+
+    api_key = get_api_key()
+    if not api_key:
+        st.warning("Enter your free OpenWeatherMap API key in the sidebar to fetch live forecasts.")
+        return
 
     with st.form(key="search_form"):
         col_search, col_opts1, col_opts2 = st.columns([2.5, 1, 1])
@@ -388,36 +461,51 @@ def page_home():
     if not active_city:
         active_city = "Karachi"
 
+    owm_units = "imperial" if "Fahrenheit" in unit else "metric"
+    u_sym = "°F" if "Fahrenheit" in unit else "°C"
+
     with st.spinner("Fetching live data for " + str(active_city) + "..."):
-        geo = geocode_city(active_city)
+        geo = geocode_city(active_city, api_key)
         if not geo:
             st.error("Could not find coordinates for '" + str(active_city) + "'. Please enter a valid city name.")
             return
 
         lat, lon = geo["latitude"], geo["longitude"]
         city_full = str(geo['name']) + ", " + str(geo.get('country', ''))
-        weather = fetch_weather_data(lat, lon)
 
-        if not weather:
-            st.error("Unable to retrieve weather details from meteorological servers.")
+        current = fetch_current_weather(lat, lon, api_key, owm_units)
+        forecast = fetch_forecast(lat, lon, api_key, owm_units)
+        uv_value = fetch_uv_index(lat, lon, api_key)
+
+        if not current or not forecast:
+            st.error("Unable to retrieve weather details. Please check your API key or try again shortly.")
             return
 
-    curr = weather["current"]
-    w_desc, w_icon = decode_wmo_code(curr["weather_code"])
+    main_block = current.get("main", {})
+    wind_block = current.get("wind", {})
+    weather_block = (current.get("weather") or [{}])[0]
 
-    t_curr = curr["temperature_2m"]
-    t_feels = curr["apparent_temperature"]
+    w_desc, w_icon = decode_owm_icon(weather_block.get("icon"), weather_block.get("description"))
 
-    if "Fahrenheit" in unit:
-        t_curr = (t_curr * 1.8) + 32
-        t_feels = (t_feels * 1.8) + 32
-        u_sym = "°F"
+    t_curr = main_block.get("temp", 0.0)
+    t_feels = main_block.get("feels_like", 0.0)
+    humidity = main_block.get("humidity", 0)
+    pressure = main_block.get("pressure", 0)
+    visibility_km = current.get("visibility", 0) / 1000.0
+
+    wind_spd = wind_block.get("speed", 0.0)
+    if owm_units == "metric":
+        wind_spd = wind_spd * 3.6  # m/s -> km/h
+        if speed_unit == "m/s":
+            wind_spd = wind_spd / 3.6
     else:
-        u_sym = "°C"
+        # imperial units already return mph; convert to km/h baseline then to requested unit
+        wind_spd_kmh = wind_spd * 1.60934
+        wind_spd = wind_spd_kmh if speed_unit == "km/h" else wind_spd_kmh / 3.6
 
-    wind_spd = curr["wind_speed_10m"]
-    if speed_unit == "m/s":
-        wind_spd = wind_spd / 3.6
+    wind_dir = wind_direction_label(wind_block.get("deg"))
+    uv_label = uv_risk_label(uv_value)
+    uv_display = f"{uv_value:.1f}" if uv_value is not None else "N/A"
 
     st.markdown("---")
 
@@ -428,23 +516,57 @@ def page_home():
         '<h1 style="font-size: 3.8rem; margin: 14px 0; color:#38BDF8 !important; font-weight:700;">' + f'{t_curr:.1f}' + ' ' + str(u_sym) + ' <span style="font-size:1.5rem; font-weight:400; color:#94A3B8 !important;">' + str(w_desc) + '</span></h1>',
         '<div style="margin-top:16px;">',
         '<span class="badge">Feels Like &nbsp;' + f'{t_feels:.1f}' + ' ' + str(u_sym) + '</span>',
-        '<span class="badge">Humidity &nbsp;' + str(curr['relative_humidity_2m']) + '%</span>',
-        '<span class="badge">Wind &nbsp;' + f'{wind_spd:.1f}' + ' ' + str(speed_unit) + '</span>',
-        '<span class="badge">Pressure &nbsp;' + str(curr['surface_pressure']) + ' hPa</span>',
+        '<span class="badge">Humidity &nbsp;' + str(humidity) + '%</span>',
+        '<span class="badge">Wind &nbsp;' + f'{wind_spd:.1f}' + ' ' + str(speed_unit) + ' ' + str(wind_dir) + '</span>',
+        '<span class="badge">UV Index &nbsp;' + str(uv_display) + ' (' + str(uv_label) + ')</span>',
+        '<span class="badge">Pressure &nbsp;' + str(pressure) + ' hPa</span>',
+        '<span class="badge">Visibility &nbsp;' + f'{visibility_km:.1f}' + ' km</span>',
         '</div>',
         '</div>'
     ]
     st.markdown("".join(card_lines), unsafe_allow_html=True)
 
+    # ---- Parse 3-hour forecast list into hourly (next 24h) and daily buckets ----
+    forecast_list = forecast.get("list", [])
+
+    h_times, h_temps, h_humidity, h_rain = [], [], [], []
+    for entry in forecast_list[:8]:  # 8 x 3-hour steps ≈ 24 hours
+        dt_txt = entry.get("dt_txt", "")
+        try:
+            label = datetime.datetime.strptime(dt_txt, "%Y-%m-%d %H:%M:%S").strftime("%H:00")
+        except ValueError:
+            label = dt_txt
+        h_times.append(label)
+        h_temps.append(entry.get("main", {}).get("temp", 0.0))
+        h_humidity.append(entry.get("main", {}).get("humidity", 0))
+        h_rain.append(round(entry.get("pop", 0.0) * 100))
+
+    daily_buckets = defaultdict(list)
+    for entry in forecast_list:
+        date_key = entry.get("dt_txt", "")[:10]
+        daily_buckets[date_key].append(entry)
+
+    d_dates, d_max, d_min, d_conditions, d_icons, d_rain, d_wind = [], [], [], [], [], [], []
+    for date_key in sorted(daily_buckets.keys())[:5]:
+        entries = daily_buckets[date_key]
+        temps = [e.get("main", {}).get("temp", 0.0) for e in entries]
+        pops = [e.get("pop", 0.0) for e in entries]
+        winds = [e.get("wind", {}).get("speed", 0.0) for e in entries]
+        mid_entry = entries[len(entries) // 2]
+        mid_weather = (mid_entry.get("weather") or [{}])[0]
+        cond_label, cond_icon = decode_owm_icon(mid_weather.get("icon"), mid_weather.get("description"))
+
+        d_dates.append(datetime.datetime.strptime(date_key, "%Y-%m-%d").strftime("%a, %b %d"))
+        d_max.append(max(temps) if temps else 0.0)
+        d_min.append(min(temps) if temps else 0.0)
+        d_conditions.append(cond_label)
+        d_icons.append(cond_icon)
+        d_rain.append(round(max(pops) * 100) if pops else 0)
+        wind_kmh = (max(winds) * 3.6) if owm_units == "metric" else (max(winds) * 1.60934) if winds else 0.0
+        d_wind.append(wind_kmh if speed_unit == "km/h" else wind_kmh / 3.6)
+
     # 24-Hour Plotly Graph
     st.markdown("### 24-Hour Temperature Trend")
-    hourly = weather["hourly"]
-    h_times = [datetime.datetime.fromisoformat(t).strftime("%H:00") for t in hourly["time"][:24]]
-    h_temps = hourly["temperature_2m"][:24]
-
-    if "Fahrenheit" in unit:
-        h_temps = [(t * 1.8) + 32 for t in h_temps]
-
     fig_hourly = go.Figure()
     fig_hourly.add_trace(
         go.Scatter(
@@ -463,28 +585,15 @@ def page_home():
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font=dict(family="Inter, sans-serif", color="#94A3B8"),
-        xaxis_title="Time of Day",
+        xaxis_title="Time of Day (3-hour steps)",
         yaxis_title="Temperature (" + str(u_sym) + ")",
         margin=dict(l=20, r=20, t=20, b=20),
         height=320
     )
     st.plotly_chart(fig_hourly, use_container_width=True)
 
-    # 7-Day Forecast Chart
-    st.markdown("### 7-Day Extended Forecast")
-    daily = weather["daily"]
-    d_dates = [datetime.datetime.fromisoformat(d).strftime("%a, %b %d") for d in daily["time"]]
-    d_max = daily["temperature_2m_max"]
-    d_min = daily["temperature_2m_min"]
-
-    if "Fahrenheit" in unit:
-        d_max = [(t * 1.8) + 32 for t in d_max]
-        d_min = [(t * 1.8) + 32 for t in d_min]
-
-    d_codes = [decode_wmo_code(c) for c in daily["weather_code"]]
-    d_conditions = [c[0] for c in d_codes]
-    d_icons = [c[1] for c in d_codes]
-
+    # 5-Day Forecast Chart
+    st.markdown("### 5-Day Extended Forecast")
     fig_daily = go.Figure()
     fig_daily.add_trace(go.Bar(x=d_dates, y=d_max, name="Max Temp (" + str(u_sym) + ")", marker_color="#38BDF8"))
     fig_daily.add_trace(go.Bar(x=d_dates, y=d_min, name="Min Temp (" + str(u_sym) + ")", marker_color="#4F46E5"))
@@ -502,7 +611,7 @@ def page_home():
 
     # Data Tables
     st.markdown("### Tabular Breakdown")
-    tab1, tab2 = st.tabs(["7-Day Daily Forecast Data", "Hourly Forecast Data (Next 24h)"])
+    tab1, tab2 = st.tabs(["5-Day Daily Forecast Data", "Hourly Forecast Data (Next 24h)"])
 
     with tab1:
         st.dataframe(
@@ -511,8 +620,8 @@ def page_home():
                 "Condition": [str(d_icons[i]) + " " + str(d_conditions[i]) for i in range(len(d_dates))],
                 "Max Temp (" + str(u_sym) + ")": [round(x, 1) for x in d_max],
                 "Min Temp (" + str(u_sym) + ")": [round(x, 1) for x in d_min],
-                "Rain Probability": [str(p) + "%" for p in daily["precipitation_probability_max"]],
-                "Max Wind (" + str(speed_unit) + ")": [round(w if speed_unit == "km/h" else w / 3.6, 1) for w in daily["wind_speed_10m_max"]]
+                "Rain Probability": [str(p) + "%" for p in d_rain],
+                "Max Wind (" + str(speed_unit) + ")": [round(w, 1) for w in d_wind]
             },
             use_container_width=True,
             hide_index=True
@@ -523,14 +632,14 @@ def page_home():
             {
                 "Time": h_times,
                 "Temperature (" + str(u_sym) + ")": [round(x, 1) for x in h_temps],
-                "Humidity": [str(h) + "%" for h in hourly["relative_humidity_2m"][:24]],
-                "Rain Probability": [str(p) + "%" for p in hourly["precipitation_probability"][:24]]
+                "Humidity": [str(h) + "%" for h in h_humidity],
+                "Rain Probability": [str(p) + "%" for p in h_rain]
             },
             use_container_width=True,
             hide_index=True
         )
 
-    st.caption("Crafted by **Hafiz Muhammad Ubaid** · Powered by Open-Meteo Meteorological API")
+    st.caption("Crafted by **Hafiz Muhammad Ubaid** · Powered by OpenWeatherMap")
 
 # ---------------- PAGE: ABOUT ----------------
 def page_about():
