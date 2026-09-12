@@ -80,7 +80,6 @@ def page_home():
 
     st.title("WEATHER FORECAST ⚡")
 
-    # Form handling allows seamless multi-city searches without reloading
     with st.form(key="search_form"):
         col_search, col_opts1, col_opts2 = st.columns([2.5, 1, 1])
 
@@ -137,4 +136,11 @@ def page_home():
     
     st.markdown("---")
     
-    card_html = f"""
+    humidity = curr['relative_humidity_2m']
+    pressure = curr['surface_pressure']
+    curr_temp_val = round(t_curr, 1)
+    feels_temp_val = round(t_feels, 1)
+    wind_spd_val = round(wind_spd, 1)
+
+    card_html = (
+        f'
