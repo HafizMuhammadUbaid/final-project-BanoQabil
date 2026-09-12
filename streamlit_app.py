@@ -324,41 +324,91 @@ def apply_custom_styles(bg_url, overlay=None):
 DEFAULT_BG_IMAGE = "https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=1920&q=80"
 DEFAULT_OVERLAY = ("rgba(6, 10, 20, 0.92)", "rgba(8, 13, 26, 0.96)")
 
-# Maps raw OpenWeatherMap "main" condition strings to a visual theme group
-CONDITION_GROUPS = {
-    "clear": "clear",
-    "clouds": "clouds",
-    "rain": "rain",
-    "drizzle": "rain",
-    "thunderstorm": "storm",
-    "snow": "snow",
-    "mist": "fog",
-    "smoke": "fog",
-    "haze": "fog",
-    "dust": "fog",
-    "fog": "fog",
-    "sand": "fog",
-    "ash": "fog",
-    "squall": "storm",
-    "tornado": "storm",
+# 7 granular condition categories, each resolved from OpenWeatherMap's precise
+# numeric weather-condition "id" (far more specific than the coarse "main" string).
+CATEGORY_LABELS = {
+    "clear": "Clear / Sunny",
+    "partly_cloudy": "Partly Cloudy",
+    "overcast": "Overcast / Heavy Clouds",
+    "light_rain": "Light Rain / Showers",
+    "heavy_rain": "Heavy Rain / Thunderstorm",
+    "snow": "Snow",
+    "fog": "Fog / Haze",
 }
 
-# High-quality background photo per theme group, split by day / night
+def get_weather_category(weather_id):
+    """Maps an OpenWeatherMap condition id to one of 7 granular visual categories."""
+    try:
+        wid = int(weather_id)
+    except (TypeError, ValueError):
+        return "clear"
+
+    if 200 <= wid <= 232:                       # thunderstorm family
+        return "heavy_rain"
+    if 300 <= wid <= 321:                        # drizzle family
+        return "light_rain"
+    if wid in (500, 501, 520, 521):              # light / moderate rain & showers
+        return "light_rain"
+    if wid in (502, 503, 504, 511, 522, 531):     # heavy / violent / freezing rain
+        return "heavy_rain"
+    if 600 <= wid <= 622:                        # snow family
+        return "snow"
+    if wid in (771, 781):                        # squall / tornado -> severe
+        return "heavy_rain"
+    if 701 <= wid <= 762:                         # mist, smoke, haze, dust, fog, sand, ash
+        return "fog"
+    if wid == 800:                                # clear sky
+        return "clear"
+    if wid in (801, 802):                         # few / scattered clouds
+        return "partly_cloudy"
+    if wid in (803, 804):                         # broken / overcast clouds
+        return "overcast"
+    return "clear"
+
+def compute_is_day(current_json):
+    """Strictly determines day vs night using the searched city's own sunrise/sunset epochs."""
+    try:
+        dt_epoch = current_json.get("dt")
+        sys_block = current_json.get("sys", {})
+        sunrise = sys_block.get("sunrise")
+        sunset = sys_block.get("sunset")
+        if dt_epoch is not None and sunrise is not None and sunset is not None:
+            return sunrise <= dt_epoch <= sunset
+    except Exception:
+        pass
+    icon_code = (current_json.get("weather") or [{}])[0].get("icon", "")
+    return not str(icon_code).endswith("n")
+
+def get_local_time_str(current_json):
+    """Formats the searched city's exact local time using its UTC offset."""
+    try:
+        dt_epoch = current_json.get("dt")
+        tz_offset = current_json.get("timezone", 0)
+        local_dt = datetime.datetime.utcfromtimestamp(dt_epoch + tz_offset)
+        return local_dt.strftime("%I:%M %p").lstrip("0")
+    except Exception:
+        return "N/A"
+
+# High-definition, non-repetitive background photo per category, split day / night (14 unique scenes)
 THEME_IMAGES = {
     "clear": {
         "day": "https://images.unsplash.com/photo-1601297183305-6df142704ea2?auto=format&fit=crop&w=1920&q=80",
         "night": "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80",
     },
-    "clouds": {
+    "partly_cloudy": {
+        "day": "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1920&q=80",
+        "night": "https://images.unsplash.com/photo-1533104816931-20fa691ff6ca?auto=format&fit=crop&w=1920&q=80",
+    },
+    "overcast": {
         "day": "https://images.unsplash.com/photo-1499956827185-0d63ee78a910?auto=format&fit=crop&w=1920&q=80",
         "night": "https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?auto=format&fit=crop&w=1920&q=80",
     },
-    "rain": {
+    "light_rain": {
         "day": "https://images.unsplash.com/photo-1519692933481-e162a57d6721?auto=format&fit=crop&w=1920&q=80",
         "night": "https://images.unsplash.com/photo-1428592953211-077101b2021b?auto=format&fit=crop&w=1920&q=80",
     },
-    "storm": {
-        "day": "https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?auto=format&fit=crop&w=1920&q=80",
+    "heavy_rain": {
+        "day": "https://images.unsplash.com/photo-1500674425229-f692875b0ab3?auto=format&fit=crop&w=1920&q=80",
         "night": "https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?auto=format&fit=crop&w=1920&q=80",
     },
     "snow": {
@@ -371,21 +421,25 @@ THEME_IMAGES = {
     },
 }
 
-# Overlay tint per theme group / time-of-day, tuned so glass cards & text stay fully legible
+# Overlay tint per category / time-of-day, tuned so glass cards & text stay fully legible
 THEME_OVERLAYS = {
     "clear": {
         "day": ("rgba(15, 45, 90, 0.42)", "rgba(6, 10, 22, 0.80)"),
         "night": ("rgba(3, 6, 18, 0.78)", "rgba(2, 4, 12, 0.94)"),
     },
-    "clouds": {
+    "partly_cloudy": {
+        "day": ("rgba(25, 50, 85, 0.48)", "rgba(10, 16, 30, 0.82)"),
+        "night": ("rgba(8, 12, 26, 0.75)", "rgba(4, 6, 16, 0.93)"),
+    },
+    "overcast": {
         "day": ("rgba(30, 41, 59, 0.60)", "rgba(8, 13, 26, 0.86)"),
         "night": ("rgba(6, 9, 18, 0.78)", "rgba(4, 6, 14, 0.94)"),
     },
-    "rain": {
-        "day": ("rgba(8, 22, 40, 0.68)", "rgba(5, 9, 18, 0.90)"),
-        "night": ("rgba(4, 8, 18, 0.80)", "rgba(2, 4, 10, 0.95)"),
+    "light_rain": {
+        "day": ("rgba(10, 28, 48, 0.62)", "rgba(6, 11, 20, 0.88)"),
+        "night": ("rgba(5, 10, 20, 0.78)", "rgba(2, 5, 12, 0.94)"),
     },
-    "storm": {
+    "heavy_rain": {
         "day": ("rgba(12, 10, 28, 0.72)", "rgba(4, 4, 12, 0.92)"),
         "night": ("rgba(6, 5, 16, 0.82)", "rgba(2, 2, 8, 0.96)"),
     },
@@ -399,19 +453,18 @@ THEME_OVERLAYS = {
     },
 }
 
-def resolve_weather_theme(main_condition, is_day):
-    """Return (background_image_url, (overlay_start, overlay_end)) for a live weather condition."""
-    group = CONDITION_GROUPS.get(str(main_condition or "").strip().lower())
+def resolve_weather_theme(category, is_day):
+    """Return (background_image_url, (overlay_start, overlay_end)) for a granular weather category."""
     variant = "day" if is_day else "night"
-    if not group:
+    if category not in THEME_IMAGES:
         return DEFAULT_BG_IMAGE, DEFAULT_OVERLAY
-    bg_url = THEME_IMAGES.get(group, {}).get(variant, DEFAULT_BG_IMAGE)
-    overlay = THEME_OVERLAYS.get(group, {}).get(variant, DEFAULT_OVERLAY)
+    bg_url = THEME_IMAGES.get(category, {}).get(variant, DEFAULT_BG_IMAGE)
+    overlay = THEME_OVERLAYS.get(category, {}).get(variant, DEFAULT_OVERLAY)
     return bg_url, overlay
 
-def apply_dynamic_weather_background(main_condition, is_day):
-    """Injects a style block that overrides just the .stApp background, adapting to live weather."""
-    bg_url, (overlay_start, overlay_end) = resolve_weather_theme(main_condition, is_day)
+def apply_dynamic_weather_background(category, is_day):
+    """Injects a style block that overrides just the .stApp background, matching condition + local time."""
+    bg_url, (overlay_start, overlay_end) = resolve_weather_theme(category, is_day)
     st.markdown(
         "<style>.stApp { background: linear-gradient(160deg, " + overlay_start + ", " + overlay_end +
         "), url('" + bg_url + "') !important; background-attachment: fixed !important; "
@@ -419,6 +472,7 @@ def apply_dynamic_weather_background(main_condition, is_day):
         "transition: background 0.7s ease-in-out; }</style>",
         unsafe_allow_html=True
     )
+
 
 
 def get_api_key():
@@ -612,10 +666,11 @@ def page_home():
 
     w_desc, w_icon = decode_owm_icon(weather_block.get("icon"), weather_block.get("description"))
 
-    # Adapt the full-page background to the live weather condition (day/night aware)
-    icon_code = str(weather_block.get("icon", ""))
-    is_day = not icon_code.endswith("n")
-    apply_dynamic_weather_background(weather_block.get("main"), is_day)
+    # Precise category + strict local-time day/night check for this exact city, then paint the background
+    weather_category = get_weather_category(weather_block.get("id"))
+    is_day = compute_is_day(current)
+    local_time_str = get_local_time_str(current)
+    apply_dynamic_weather_background(weather_category, is_day)
 
     t_curr = main_block.get("temp", 0.0)
     t_feels = main_block.get("feels_like", 0.0)
@@ -636,13 +691,14 @@ def page_home():
     wind_dir = wind_direction_label(wind_block.get("deg"))
     uv_label = uv_risk_label(uv_value)
     uv_display = f"{uv_value:.1f}" if uv_value is not None else "N/A"
+    day_night_label = "Day" if is_day else "Night"
 
     st.markdown("---")
 
     card_lines = [
         '<div class="glass-card">',
         '<h2 style="margin-bottom:0px;">' + str(w_icon) + ' ' + str(city_full) + '</h2>',
-        '<p style="color:#64748B !important; margin-top:4px; font-size:0.85rem; letter-spacing:0.3px;">COORDINATES · ' + f'{lat:.2f}' + '°N, ' + f'{lon:.2f}' + '°E</p>',
+        '<p style="color:#64748B !important; margin-top:4px; font-size:0.85rem; letter-spacing:0.3px;">COORDINATES · ' + f'{lat:.2f}' + '°N, ' + f'{lon:.2f}' + '°E &nbsp;·&nbsp; LOCAL TIME ' + str(local_time_str) + ' (' + str(day_night_label) + ')</p>',
         '<h1 style="font-size: 3.8rem; margin: 14px 0; color:#38BDF8 !important; font-weight:700;">' + f'{t_curr:.1f}' + ' ' + str(u_sym) + ' <span style="font-size:1.5rem; font-weight:400; color:#94A3B8 !important;">' + str(w_desc) + '</span></h1>',
         '<div style="margin-top:16px;">',
         '<span class="badge">Feels Like &nbsp;' + f'{t_feels:.1f}' + ' ' + str(u_sym) + '</span>',
