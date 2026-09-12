@@ -13,15 +13,15 @@ st.set_page_config(
 
 # ---------------- CUSTOM CSS & STYLING ----------------
 def apply_custom_styles(bg_url):
-    css_code = """
-    
-    """ % bg_url
-    st.markdown(css_code, unsafe_allow_html=True)
+    css_lines = [
+        ""
+    ]
+    st.markdown("\n".join(css_lines), unsafe_allow_html=True)
 
 # ---------------- API HELPER FUNCTIONS ----------------
 @st.cache_data(ttl=1800)
 def geocode_city(city_name):
-    url = f"https://geocoding-api.open-meteo.com/v1/search?name={city_name}&count=1&language=en&format=json"
+    url = "https://geocoding-api.open-meteo.com/v1/search?name=" + str(city_name) + "&count=1&language=en&format=json"
     try:
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
@@ -35,7 +35,7 @@ def geocode_city(city_name):
 @st.cache_data(ttl=900)
 def fetch_weather_data(lat, lon):
     url = (
-        f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
+        "https://api.open-meteo.com/v1/forecast?latitude=" + str(lat) + "&longitude=" + str(lon) +
         "&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,weather_code,surface_pressure,wind_speed_10m"
         "&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,weather_code"
         "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max"
@@ -103,14 +103,14 @@ def page_home():
 
     active_city = st.session_state.get("active_city", "Karachi")
 
-    with st.spinner(f"Fetching live data for {active_city}..."):
+    with st.spinner("Fetching live data for " + str(active_city) + "..."):
         geo = geocode_city(active_city)
         if not geo:
-            st.error(f"Could not find coordinates for '{active_city}'. Please enter a valid city name.")
+            st.error("Could not find coordinates for '" + str(active_city) + "'. Please enter a valid city name.")
             return
 
         lat, lon = geo["latitude"], geo["longitude"]
-        city_full = f"{geo['name']}, {geo.get('country', '')}"
+        city_full = str(geo['name']) + ", " + str(geo.get('country', ''))
         weather = fetch_weather_data(lat, lon)
 
         if not weather:
@@ -136,5 +136,5 @@ def page_home():
     
     st.markdown("---")
 
-    card_html = (
+    card_lines = [
         '
