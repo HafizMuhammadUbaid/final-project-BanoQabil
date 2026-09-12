@@ -110,8 +110,35 @@ def apply_custom_styles(bg_url):
         "    box-shadow: 0 6px 22px rgba(10, 102, 194, 0.65);",
         "}",
         "section[data-testid='stSidebar'] {",
-        "    background: rgba(10, 15, 29, 0.85) !important;",
-        "    border-right: 1px solid rgba(255, 255, 255, 0.1);",
+        "    background: rgba(10, 15, 29, 0.92) !important;",
+        "    border-right: 1px solid rgba(255, 255, 255, 0.08);",
+        "}",
+        "div[data-testid='stSidebarUserContent'] {",
+        "    padding-top: 1.5rem;",
+        "}",
+        "div[role='radiogroup'] {",
+        "    gap: 10px;",
+        "}",
+        "div[role='radiogroup'] label {",
+        "    background: rgba(255, 255, 255, 0.03) !important;",
+        "    border: 1px solid rgba(255, 255, 255, 0.08) !important;",
+        "    border-radius: 12px !important;",
+        "    padding: 12px 16px !important;",
+        "    transition: all 0.3s ease !important;",
+        "    cursor: pointer !important;",
+        "}",
+        "div[role='radiogroup'] label:hover {",
+        "    background: rgba(56, 189, 248, 0.1) !important;",
+        "    border-color: rgba(56, 189, 248, 0.3) !important;",
+        "}",
+        "div[role='radiogroup'] label[data-checked='true'] {",
+        "    background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(37, 99, 235, 0.2) 100%) !important;",
+        "    border-color: #38BDF8 !important;",
+        "    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.2) !important;",
+        "}",
+        "div[role='radiogroup'] label span {",
+        "    font-weight: 600 !important;",
+        "    letter-spacing: 0.5px !important;",
         "}",
         ".badge {",
         "    display: inline-block;",
@@ -417,16 +444,15 @@ def page_contact():
 # ---------------- MAIN ROUTER ----------------
 def main():
     st.sidebar.markdown("""
-        <div style="text-align: center; padding: 10px 0 20px 0;">
-            <h2 style="margin:0; font-size: 1.4rem; color: #38BDF8 !important;">🌤️ WEATHER APP</h2>
-            <p style="font-size: 0.8rem; color: #94A3B8 !important; margin-top: 4px;">by Hafiz Muhammad Ubaid</p>
+        <div style="padding: 10px 0 25px 0; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px;">
+            <h2 style="margin:0; font-size: 1.3rem; letter-spacing: 1px; color: #38BDF8 !important;">WEATHER APP</h2>
+            <p style="font-size: 0.8rem; color: #94A3B8 !important; margin-top: 4px;">By Hafiz Muhammad Ubaid</p>
         </div>
     """, unsafe_allow_html=True)
     
     page = st.sidebar.radio(
         "NAVIGATION", 
-        ["Home", "About", "Contact"],
-        format_func=lambda x: f"🏠  {x}" if x == "Home" else (f"ℹ️  {x}" if x == "About" else f"📩  {x}")
+        ["Home", "About", "Contact"]
     )
 
     if page == "Home":
