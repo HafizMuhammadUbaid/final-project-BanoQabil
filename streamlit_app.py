@@ -530,9 +530,9 @@ weather information easy to access.
 
 ### Our Team
 
-**Group Leader:** Muhammad Ubaid
+**Made BY Muhammad Ubaid**
 
-**Partners:** Abdul Hadi And Abdullah Tanoli
+
 """
     )
 
@@ -550,9 +550,8 @@ def page_contact():
         """
 ## CONTACT INFORMATION
 
-**Group Leader:** Muhammad Ubaid
+**Made By Muhammad Ubaid** 
 
-**Project Partners:** Abdul Hadi And Abdullah Tanoli
 
 **Instagram:** @muhammadubaid__
 
