@@ -16,6 +16,7 @@ def apply_custom_styles(bg_url):
     css_lines = [
         "<style>",
         "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700;800&display=swap');",
+        "@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');", # FontAwesome Icons Library
         ".stApp {",
         "    background: linear-gradient(rgba(10, 15, 29, 0.82), rgba(10, 15, 29, 0.92)), url('" + bg_url + "');",
         "    background-attachment: fixed;",
@@ -74,10 +75,10 @@ def apply_custom_styles(bg_url):
         "    display: inline-flex;",
         "    align-items: center;",
         "    justify-content: center;",
-        "    width: 50px;",
-        "    height: 50px;",
+        "    width: 55px;",
+        "    height: 55px;",
         "    border-radius: 50%;",
-        "    font-size: 1.5rem;",
+        "    font-size: 1.6rem;",
         "    text-decoration: none !important;",
         "    color: #FFFFFF !important;",
         "    transition: all 0.3s ease;",
@@ -90,15 +91,28 @@ def apply_custom_styles(bg_url):
         "}",
         ".icon-insta:hover {",
         "    transform: scale(1.15);",
-        "    box-shadow: 0 6px 20px rgba(220, 39, 67, 0.6);",
+        "    box-shadow: 0 6px 22px rgba(220, 39, 67, 0.65);",
         "}",
         ".icon-linkedin {",
-        "    background: linear-gradient(135deg, #0077B5 0%, #004182 100%);",
-        "    box-shadow: 0 4px 15px rgba(0, 119, 181, 0.35);",
+        "    background: #0A66C2;",
+        "    box-shadow: 0 4px 15px rgba(10, 102, 194, 0.35);",
         "}",
         ".icon-linkedin:hover {",
         "    transform: scale(1.15);",
-        "    box-shadow: 0 6px 20px rgba(0, 119, 181, 0.6);",
+        "    box-shadow: 0 6px 22px rgba(10, 102, 194, 0.65);",
+        "}",
+        ".sidebar-link {",
+        "    display: flex;",
+        "    align-items: center;",
+        "    gap: 10px;",
+        "    color: #38BDF8 !important;",
+        "    text-decoration: none !important;",
+        "    font-weight: 500;",
+        "    margin-bottom: 8px;",
+        "    transition: color 0.2s ease;",
+        "}",
+        ".sidebar-link:hover {",
+        "    color: #7DD3FC !important;",
         "}",
         ".badge {",
         "    display: inline-block;",
@@ -358,9 +372,6 @@ def page_about():
 
     st.title("📜 ABOUT THE PROJECT")
     
-    insta_link = "https://www.instagram.com/muhammadubaid__?stkn=eWV4ejI1MXh0Mndr&utm_source=qr"
-    linkedin_link = "https://www.linkedin.com/in/muhammad-ubaid-2b88722b3?utm_source=share_via&utm_content=profile&utm_medium=member_ios"
-
     about_lines = [
         '<div class="glass-card">',
         '<h2>WEATHER FORECAST BY HMU ✪</h2>',
@@ -399,8 +410,8 @@ def page_contact():
         '<h3>🌐 Social Profiles</h3>',
         '<p>Click an icon below to visit my profile directly:</p>',
         '<div style="margin-top: 15px; display: flex; align-items: center;">',
-        '<a href="' + str(insta_link) + '" target="_blank" class="social-icon-btn icon-insta" title="Instagram Profile">📸</a>',
-        '<a href="' + str(linkedin_link) + '" target="_blank" class="social-icon-btn icon-linkedin" title="LinkedIn Profile">💼</a>',
+        '<a href="' + str(insta_link) + '" target="_blank" class="social-icon-btn icon-insta" title="Instagram Profile"><i class="fa-brands fa-instagram"></i></a>',
+        '<a href="' + str(linkedin_link) + '" target="_blank" class="social-icon-btn icon-linkedin" title="LinkedIn Profile"><i class="fa-brands fa-linkedin-in"></i></a>',
         '</div>',
         '</div>'
     ]
@@ -416,8 +427,11 @@ def main():
     insta_link = "https://www.instagram.com/muhammadubaid__?stkn=eWV4ejI1MXh0Mndr&utm_source=qr"
     linkedin_link = "https://www.linkedin.com/in/muhammad-ubaid-2b88722b3?utm_source=share_via&utm_content=profile&utm_medium=member_ios"
     
-    st.sidebar.markdown("[📸 Instagram Profile](" + str(insta_link) + ")")
-    st.sidebar.markdown("[💼 LinkedIn Profile](" + str(linkedin_link) + ")")
+    sidebar_html = [
+        '<a href="' + str(insta_link) + '" target="_blank" class="sidebar-link"><i class="fa-brands fa-instagram"></i> Instagram Profile</a>',
+        '<a href="' + str(linkedin_link) + '" target="_blank" class="sidebar-link"><i class="fa-brands fa-linkedin"></i> LinkedIn Profile</a>'
+    ]
+    st.sidebar.markdown("\n".join(sidebar_html), unsafe_allow_html=True)
 
     if page == "Home":
         page_home()
