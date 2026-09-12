@@ -15,7 +15,7 @@ st.set_page_config(
 def apply_custom_styles(bg_url):
     css_code = """
     
-    """.format(bg_url=bg_url)
+    """ % bg_url
     st.markdown(css_code, unsafe_allow_html=True)
 
 # ---------------- API HELPER FUNCTIONS ----------------
@@ -136,4 +136,5 @@ def page_home():
     
     st.markdown("---")
 
-    card_html = """
+    card_html = (
+        '
