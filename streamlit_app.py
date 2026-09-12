@@ -15,7 +15,8 @@ st.set_page_config(
 )
 
 # ---------------- CUSTOM CSS & STYLING ----------------
-def apply_custom_styles(bg_url):
+def apply_custom_styles(bg_url, overlay=None):
+    overlay_start, overlay_end = overlay if overlay else ("rgba(6, 10, 20, 0.92)", "rgba(8, 13, 26, 0.96)")
     css_lines = [
         "<style>",
         "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap');",
@@ -23,14 +24,38 @@ def apply_custom_styles(bg_url):
 
         # ---------- GLOBAL BACKDROP ----------
         ".stApp {",
-        "    background: linear-gradient(160deg, rgba(6, 10, 20, 0.92), rgba(8, 13, 26, 0.96)), url('" + bg_url + "');",
-        "    background-attachment: fixed;",
-        "    background-size: cover;",
-        "    background-position: center;",
+        "    background: linear-gradient(160deg, " + overlay_start + ", " + overlay_end + "), url('" + bg_url + "') !important;",
+        "    background-attachment: fixed !important;",
+        "    background-size: cover !important;",
+        "    background-position: center !important;",
+        "    transition: background 0.7s ease-in-out;",
         "    font-family: 'Inter', sans-serif;",
         "}",
 
-        "#MainMenu, footer, header {visibility: hidden;}",
+        "#MainMenu, footer {visibility: hidden;}",
+        "header[data-testid='stHeader'] {",
+        "    background: transparent !important;",
+        "    box-shadow: none !important;",
+        "}",
+
+        # ---------- SIDEBAR TOGGLE / COLLAPSE CONTROL ----------
+        "[data-testid='stSidebarCollapsedControl'], button[data-testid='collapsedControl'] {",
+        "    background: rgba(14, 165, 233, 0.18) !important;",
+        "    border: 1px solid rgba(56, 189, 248, 0.45) !important;",
+        "    border-radius: 10px !important;",
+        "    box-shadow: 0 4px 16px rgba(14, 165, 233, 0.35) !important;",
+        "    padding: 4px !important;",
+        "}",
+        "[data-testid='stSidebarCollapsedControl'] svg, button[data-testid='collapsedControl'] svg {",
+        "    fill: #38BDF8 !important;",
+        "}",
+        "[data-testid='stSidebarCollapsedControl']:hover, button[data-testid='collapsedControl']:hover {",
+        "    background: rgba(14, 165, 233, 0.32) !important;",
+        "    transform: scale(1.05);",
+        "}",
+        "[data-testid='stSidebarCollapseButton'] svg, [data-testid='baseButton-headerNoPadding'] svg {",
+        "    fill: #38BDF8 !important;",
+        "}",
 
         "h1, h2, h3, h4, h5, h6 {",
         "    font-family: 'Poppins', sans-serif !important;",
@@ -295,7 +320,107 @@ def apply_custom_styles(bg_url):
     ]
     st.markdown("\n".join(css_lines), unsafe_allow_html=True)
 
-# ---------------- API KEY HANDLING ----------------
+# ---------------- DYNAMIC WEATHER BACKGROUND ----------------
+DEFAULT_BG_IMAGE = "https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=1920&q=80"
+DEFAULT_OVERLAY = ("rgba(6, 10, 20, 0.92)", "rgba(8, 13, 26, 0.96)")
+
+# Maps raw OpenWeatherMap "main" condition strings to a visual theme group
+CONDITION_GROUPS = {
+    "clear": "clear",
+    "clouds": "clouds",
+    "rain": "rain",
+    "drizzle": "rain",
+    "thunderstorm": "storm",
+    "snow": "snow",
+    "mist": "fog",
+    "smoke": "fog",
+    "haze": "fog",
+    "dust": "fog",
+    "fog": "fog",
+    "sand": "fog",
+    "ash": "fog",
+    "squall": "storm",
+    "tornado": "storm",
+}
+
+# High-quality background photo per theme group, split by day / night
+THEME_IMAGES = {
+    "clear": {
+        "day": "https://images.unsplash.com/photo-1601297183305-6df142704ea2?auto=format&fit=crop&w=1920&q=80",
+        "night": "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80",
+    },
+    "clouds": {
+        "day": "https://images.unsplash.com/photo-1499956827185-0d63ee78a910?auto=format&fit=crop&w=1920&q=80",
+        "night": "https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?auto=format&fit=crop&w=1920&q=80",
+    },
+    "rain": {
+        "day": "https://images.unsplash.com/photo-1519692933481-e162a57d6721?auto=format&fit=crop&w=1920&q=80",
+        "night": "https://images.unsplash.com/photo-1428592953211-077101b2021b?auto=format&fit=crop&w=1920&q=80",
+    },
+    "storm": {
+        "day": "https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?auto=format&fit=crop&w=1920&q=80",
+        "night": "https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?auto=format&fit=crop&w=1920&q=80",
+    },
+    "snow": {
+        "day": "https://images.unsplash.com/photo-1477601263568-180e2c6d046e?auto=format&fit=crop&w=1920&q=80",
+        "night": "https://images.unsplash.com/photo-1483664852095-d6cc6870702d?auto=format&fit=crop&w=1920&q=80",
+    },
+    "fog": {
+        "day": "https://images.unsplash.com/photo-1543968996-ee822b8176ba?auto=format&fit=crop&w=1920&q=80",
+        "night": "https://images.unsplash.com/photo-1508361001413-7a9dca21d08a?auto=format&fit=crop&w=1920&q=80",
+    },
+}
+
+# Overlay tint per theme group / time-of-day, tuned so glass cards & text stay fully legible
+THEME_OVERLAYS = {
+    "clear": {
+        "day": ("rgba(15, 45, 90, 0.42)", "rgba(6, 10, 22, 0.80)"),
+        "night": ("rgba(3, 6, 18, 0.78)", "rgba(2, 4, 12, 0.94)"),
+    },
+    "clouds": {
+        "day": ("rgba(30, 41, 59, 0.60)", "rgba(8, 13, 26, 0.86)"),
+        "night": ("rgba(6, 9, 18, 0.78)", "rgba(4, 6, 14, 0.94)"),
+    },
+    "rain": {
+        "day": ("rgba(8, 22, 40, 0.68)", "rgba(5, 9, 18, 0.90)"),
+        "night": ("rgba(4, 8, 18, 0.80)", "rgba(2, 4, 10, 0.95)"),
+    },
+    "storm": {
+        "day": ("rgba(12, 10, 28, 0.72)", "rgba(4, 4, 12, 0.92)"),
+        "night": ("rgba(6, 5, 16, 0.82)", "rgba(2, 2, 8, 0.96)"),
+    },
+    "snow": {
+        "day": ("rgba(51, 65, 85, 0.42)", "rgba(10, 15, 29, 0.80)"),
+        "night": ("rgba(10, 14, 26, 0.75)", "rgba(4, 6, 14, 0.92)"),
+    },
+    "fog": {
+        "day": ("rgba(30, 35, 45, 0.62)", "rgba(8, 11, 18, 0.85)"),
+        "night": ("rgba(6, 8, 14, 0.78)", "rgba(3, 4, 10, 0.93)"),
+    },
+}
+
+def resolve_weather_theme(main_condition, is_day):
+    """Return (background_image_url, (overlay_start, overlay_end)) for a live weather condition."""
+    group = CONDITION_GROUPS.get(str(main_condition or "").strip().lower())
+    variant = "day" if is_day else "night"
+    if not group:
+        return DEFAULT_BG_IMAGE, DEFAULT_OVERLAY
+    bg_url = THEME_IMAGES.get(group, {}).get(variant, DEFAULT_BG_IMAGE)
+    overlay = THEME_OVERLAYS.get(group, {}).get(variant, DEFAULT_OVERLAY)
+    return bg_url, overlay
+
+def apply_dynamic_weather_background(main_condition, is_day):
+    """Injects a style block that overrides just the .stApp background, adapting to live weather."""
+    bg_url, (overlay_start, overlay_end) = resolve_weather_theme(main_condition, is_day)
+    st.markdown(
+        "<style>.stApp { background: linear-gradient(160deg, " + overlay_start + ", " + overlay_end +
+        "), url('" + bg_url + "') !important; background-attachment: fixed !important; "
+        "background-size: cover !important; background-position: center !important; "
+        "transition: background 0.7s ease-in-out; }</style>",
+        unsafe_allow_html=True
+    )
+
+
 def get_api_key():
     """Resolve the OpenWeatherMap API key from st.secrets first, then a sidebar field."""
     secret_key = ""
@@ -419,7 +544,7 @@ def uv_risk_label(uv_value):
 
 # ---------------- PAGE: HOME ----------------
 def page_home():
-    apply_custom_styles("https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=1920&q=80")
+    apply_custom_styles(DEFAULT_BG_IMAGE)
 
     st.markdown('<div class="hero-title">Weather Forecast</div>', unsafe_allow_html=True)
     st.markdown('<div class="hero-subtitle">Live meteorological intelligence, refined</div>', unsafe_allow_html=True)
@@ -486,6 +611,11 @@ def page_home():
     weather_block = (current.get("weather") or [{}])[0]
 
     w_desc, w_icon = decode_owm_icon(weather_block.get("icon"), weather_block.get("description"))
+
+    # Adapt the full-page background to the live weather condition (day/night aware)
+    icon_code = str(weather_block.get("icon", ""))
+    is_day = not icon_code.endswith("n")
+    apply_dynamic_weather_background(weather_block.get("main"), is_day)
 
     t_curr = main_block.get("temp", 0.0)
     t_feels = main_block.get("feels_like", 0.0)
