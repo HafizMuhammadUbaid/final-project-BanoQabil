@@ -58,7 +58,7 @@ def page_home():
         "?q=80&w=1992&auto=format&fit=crop"
     )
 
-    st.title("BANO QABIL 2.0")
+  
     st.title("WEATHER FORECAST ⚡")
 
     city = st.text_input("ENTER THE NAME OF THE CITY")
@@ -473,9 +473,7 @@ def page_home():
             "Made By **Hafiz Muhammad Ubaid**"
         )
 
-        st.markdown(
-            "Partners Abdul Hadi And Abdullah Tanoli"
-        )
+        
 
     except requests.exceptions.Timeout:
 
