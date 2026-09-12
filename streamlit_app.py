@@ -5,8 +5,8 @@ from plotly import graph_objects as go
 
 # ---------------- PAGE CONFIGURATION ----------------
 st.set_page_config(
-    page_title="WEATHER FORECAST BY HAFIZ MUHAMMAD UBAID ✪",
-    page_icon="⚡",
+    page_title="Weather Forecast | Hafiz Muhammad Ubaid",
+    page_icon="◆",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -15,116 +15,279 @@ st.set_page_config(
 def apply_custom_styles(bg_url):
     css_lines = [
         "<style>",
-        "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700;800&display=swap');",
+        "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap');",
         "@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');",
+
+        # ---------- GLOBAL BACKDROP ----------
         ".stApp {",
-        "    background: linear-gradient(rgba(10, 15, 29, 0.82), rgba(10, 15, 29, 0.92)), url('" + bg_url + "');",
+        "    background: linear-gradient(160deg, rgba(6, 10, 20, 0.92), rgba(8, 13, 26, 0.96)), url('" + bg_url + "');",
         "    background-attachment: fixed;",
         "    background-size: cover;",
         "    background-position: center;",
         "    font-family: 'Inter', sans-serif;",
         "}",
+
+        "#MainMenu, footer, header {visibility: hidden;}",
+
         "h1, h2, h3, h4, h5, h6 {",
         "    font-family: 'Poppins', sans-serif !important;",
-        "    color: #FFFFFF !important;",
-        "    letter-spacing: 0.5px;",
+        "    color: #F8FAFC !important;",
+        "    letter-spacing: 0.3px;",
         "}",
         "p, label, span, div {",
-        "    color: #E2E8F0 !important;",
+        "    color: #CBD5E1 !important;",
         "}",
+
+        # ---------- HERO TITLE ----------
+        ".hero-title {",
+        "    font-family: 'Poppins', sans-serif;",
+        "    font-weight: 800;",
+        "    font-size: 2.6rem;",
+        "    background: linear-gradient(135deg, #38BDF8 0%, #818CF8 60%, #C084FC 100%);",
+        "    -webkit-background-clip: text;",
+        "    -webkit-text-fill-color: transparent;",
+        "    background-clip: text;",
+        "    margin-bottom: 0px;",
+        "    letter-spacing: -0.5px;",
+        "}",
+        ".hero-subtitle {",
+        "    color: #64748B !important;",
+        "    font-size: 0.95rem;",
+        "    font-weight: 400;",
+        "    margin-top: 4px;",
+        "    margin-bottom: 28px;",
+        "    letter-spacing: 0.5px;",
+        "    text-transform: uppercase;",
+        "}",
+
+        # ---------- GLASSMORPHIC CARD ----------
         ".glass-card {",
-        "    background: rgba(255, 255, 255, 0.04);",
-        "    backdrop-filter: blur(20px);",
-        "    -webkit-backdrop-filter: blur(20px);",
-        "    border: 1px solid rgba(255, 255, 255, 0.12);",
-        "    border-radius: 20px;",
-        "    padding: 28px;",
-        "    margin-bottom: 24px;",
-        "    box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.45);",
-        "    transition: transform 0.3s ease, border-color 0.3s ease;",
+        "    background: linear-gradient(145deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02));",
+        "    backdrop-filter: blur(24px) saturate(160%);",
+        "    -webkit-backdrop-filter: blur(24px) saturate(160%);",
+        "    border: 1px solid rgba(255, 255, 255, 0.10);",
+        "    border-radius: 22px;",
+        "    padding: 32px;",
+        "    margin-bottom: 26px;",
+        "    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 0 rgba(255,255,255,0.06);",
+        "    transition: transform 0.35s cubic-bezier(.2,.8,.2,1), border-color 0.35s ease, box-shadow 0.35s ease;",
         "}",
         ".glass-card:hover {",
-        "    border-color: rgba(56, 189, 248, 0.4);",
+        "    border-color: rgba(56, 189, 248, 0.35);",
+        "    box-shadow: 0 14px 40px 0 rgba(0,0,0,0.5), 0 0 0 1px rgba(56,189,248,0.08);",
         "}",
+
+        # ---------- FORM / INPUT CONTAINER ----------
         "div[data-testid='stForm'] {",
-        "    background: rgba(15, 23, 42, 0.6) !important;",
-        "    backdrop-filter: blur(16px);",
-        "    border: 1px solid rgba(255, 255, 255, 0.15) !important;",
-        "    border-radius: 18px !important;",
-        "    padding: 20px !important;",
+        "    background: linear-gradient(145deg, rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.45)) !important;",
+        "    backdrop-filter: blur(18px);",
+        "    border: 1px solid rgba(255, 255, 255, 0.10) !important;",
+        "    border-radius: 20px !important;",
+        "    padding: 26px !important;",
+        "    box-shadow: 0 6px 24px rgba(0,0,0,0.35);",
         "}",
-        ".stButton > button {",
+
+        # ---------- INPUT / SELECT FIELDS ----------
+        "div[data-baseweb='select'] > div, .stTextInput input {",
+        "    background: rgba(255,255,255,0.045) !important;",
+        "    border: 1px solid rgba(255,255,255,0.12) !important;",
+        "    border-radius: 12px !important;",
+        "    color: #F1F5F9 !important;",
+        "    transition: border-color 0.25s ease, box-shadow 0.25s ease;",
+        "}",
+        ".stTextInput input:focus {",
+        "    border-color: rgba(56, 189, 248, 0.55) !important;",
+        "    box-shadow: 0 0 0 3px rgba(56, 189, 233, 0.12) !important;",
+        "}",
+        "label[data-testid='stWidgetLabel'] p {",
+        "    font-size: 0.72rem !important;",
+        "    font-weight: 600 !important;",
+        "    letter-spacing: 1px !important;",
+        "    text-transform: uppercase;",
+        "    color: #64748B !important;",
+        "}",
+
+        # ---------- BUTTONS ----------
+        ".stButton > button, .stFormSubmitButton > button {",
         "    width: 100%;",
-        "    background: linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%);",
+        "    background: linear-gradient(135deg, #0EA5E9 0%, #4F46E5 100%);",
         "    color: #FFFFFF !important;",
         "    font-family: 'Poppins', sans-serif;",
         "    font-weight: 600;",
-        "    font-size: 1rem;",
+        "    font-size: 0.92rem;",
+        "    letter-spacing: 0.4px;",
         "    border: none;",
         "    border-radius: 12px;",
-        "    padding: 0.75rem 1rem;",
-        "    transition: all 0.3s ease;",
-        "    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.4);",
+        "    padding: 0.8rem 1rem;",
+        "    transition: all 0.3s cubic-bezier(.2,.8,.2,1);",
+        "    box-shadow: 0 4px 22px rgba(14, 165, 233, 0.35);",
         "}",
-        ".stButton > button:hover {",
-        "    background: linear-gradient(135deg, #38BDF8 0%, #1D4ED8 100%);",
+        ".stButton > button:hover, .stFormSubmitButton > button:hover {",
+        "    background: linear-gradient(135deg, #38BDF8 0%, #6366F1 100%);",
         "    transform: translateY(-2px);",
-        "    box-shadow: 0 6px 24px rgba(14, 165, 233, 0.6);",
+        "    box-shadow: 0 8px 28px rgba(14, 165, 233, 0.55);",
         "}",
+        ".stButton > button:active, .stFormSubmitButton > button:active {",
+        "    transform: translateY(0px);",
+        "}",
+
+        # ---------- BADGES ----------
+        ".badge {",
+        "    display: inline-block;",
+        "    padding: 9px 18px;",
+        "    border-radius: 30px;",
+        "    font-size: 0.82rem;",
+        "    font-weight: 500;",
+        "    background: rgba(56, 189, 248, 0.08);",
+        "    color: #7DD3FC !important;",
+        "    border: 1px solid rgba(56, 189, 248, 0.22);",
+        "    margin-right: 10px;",
+        "    margin-bottom: 10px;",
+        "    letter-spacing: 0.2px;",
+        "}",
+
+        # ---------- SOCIAL / CONTACT ICONS ----------
         ".social-icon-btn {",
         "    display: inline-flex;",
         "    align-items: center;",
         "    justify-content: center;",
-        "    width: 55px;",
-        "    height: 55px;",
+        "    width: 56px;",
+        "    height: 56px;",
         "    border-radius: 50%;",
-        "    font-size: 1.6rem;",
+        "    font-size: 1.5rem;",
         "    text-decoration: none !important;",
         "    color: #FFFFFF !important;",
-        "    transition: all 0.3s ease;",
-        "    margin-right: 15px;",
-        "    margin-top: 10px;",
+        "    transition: all 0.3s cubic-bezier(.2,.8,.2,1);",
+        "    margin-right: 16px;",
+        "    margin-top: 8px;",
+        "    border: 1px solid rgba(255,255,255,0.12);",
         "}",
         ".icon-email {",
         "    background: linear-gradient(135deg, #EA4335 0%, #C5221F 100%);",
-        "    box-shadow: 0 4px 15px rgba(234, 67, 53, 0.35);",
+        "    box-shadow: 0 4px 18px rgba(234, 67, 53, 0.30);",
         "}",
         ".icon-email:hover {",
-        "    transform: scale(1.15);",
-        "    box-shadow: 0 6px 22px rgba(234, 67, 53, 0.65);",
+        "    transform: translateY(-4px) scale(1.08);",
+        "    box-shadow: 0 10px 26px rgba(234, 67, 53, 0.55);",
         "}",
         ".icon-insta {",
         "    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);",
-        "    box-shadow: 0 4px 15px rgba(220, 39, 67, 0.35);",
+        "    box-shadow: 0 4px 18px rgba(220, 39, 67, 0.30);",
         "}",
         ".icon-insta:hover {",
-        "    transform: scale(1.15);",
-        "    box-shadow: 0 6px 22px rgba(220, 39, 67, 0.65);",
+        "    transform: translateY(-4px) scale(1.08);",
+        "    box-shadow: 0 10px 26px rgba(220, 39, 67, 0.55);",
         "}",
         ".icon-linkedin {",
         "    background: #0A66C2;",
-        "    box-shadow: 0 4px 15px rgba(10, 102, 194, 0.35);",
+        "    box-shadow: 0 4px 18px rgba(10, 102, 194, 0.30);",
         "}",
         ".icon-linkedin:hover {",
-        "    transform: scale(1.15);",
-        "    box-shadow: 0 6px 22px rgba(10, 102, 194, 0.65);",
+        "    transform: translateY(-4px) scale(1.08);",
+        "    box-shadow: 0 10px 26px rgba(10, 102, 194, 0.55);",
         "}",
+
+        # ---------- SIDEBAR ----------
         "section[data-testid='stSidebar'] {",
-        "    background: rgba(10, 15, 29, 0.85) !important;",
-        "    border-right: 1px solid rgba(255, 255, 255, 0.1);",
+        "    background: linear-gradient(180deg, rgba(8, 12, 24, 0.96), rgba(6, 9, 18, 0.98)) !important;",
+        "    border-right: 1px solid rgba(255, 255, 255, 0.07);",
         "}",
-        ".badge {",
-        "    display: inline-block;",
-        "    padding: 8px 16px;",
-        "    border-radius: 20px;",
-        "    font-size: 0.88rem;",
+        "section[data-testid='stSidebar'] .block-container {",
+        "    padding-top: 1.5rem;",
+        "}",
+
+        # Brand block in sidebar
+        ".brand-block {",
+        "    text-align: left;",
+        "    padding: 4px 6px 26px 6px;",
+        "    border-bottom: 1px solid rgba(255,255,255,0.08);",
+        "    margin-bottom: 22px;",
+        "}",
+        ".brand-mark {",
+        "    display: inline-flex;",
+        "    align-items: center;",
+        "    justify-content: center;",
+        "    width: 42px;",
+        "    height: 42px;",
+        "    border-radius: 12px;",
+        "    background: linear-gradient(135deg, #0EA5E9, #6366F1);",
+        "    font-size: 1.2rem;",
+        "    color: #fff !important;",
+        "    margin-bottom: 12px;",
+        "    box-shadow: 0 4px 18px rgba(99, 102, 241, 0.4);",
+        "}",
+        ".brand-title {",
+        "    font-family: 'Poppins', sans-serif;",
+        "    font-weight: 700;",
+        "    font-size: 1.05rem;",
+        "    color: #F8FAFC !important;",
+        "    margin: 0;",
+        "    letter-spacing: 0.2px;",
+        "}",
+        ".brand-subtitle {",
+        "    font-size: 0.72rem;",
+        "    color: #475569 !important;",
+        "    margin-top: 2px;",
+        "    letter-spacing: 0.4px;",
+        "    text-transform: uppercase;",
+        "}",
+        ".nav-caption {",
+        "    font-size: 0.68rem;",
         "    font-weight: 600;",
-        "    background: rgba(56, 189, 248, 0.12);",
-        "    color: #38BDF8 !important;",
-        "    border: 1px solid rgba(56, 189, 248, 0.3);",
-        "    margin-right: 8px;",
-        "    margin-bottom: 8px;",
+        "    letter-spacing: 1.6px;",
+        "    text-transform: uppercase;",
+        "    color: #334155 !important;",
+        "    margin: 4px 0 10px 6px;",
         "}",
+
+        # Radio-based nav styled as premium pill list
+        "section[data-testid='stSidebar'] div[role='radiogroup'] {",
+        "    gap: 6px;",
+        "}",
+        "section[data-testid='stSidebar'] div[role='radiogroup'] label {",
+        "    background: transparent;",
+        "    border: 1px solid transparent;",
+        "    border-radius: 12px;",
+        "    padding: 11px 14px !important;",
+        "    transition: all 0.25s ease;",
+        "    width: 100%;",
+        "}",
+        "section[data-testid='stSidebar'] div[role='radiogroup'] label:hover {",
+        "    background: rgba(255,255,255,0.04);",
+        "    border-color: rgba(255,255,255,0.08);",
+        "}",
+        "section[data-testid='stSidebar'] div[role='radiogroup'] label p {",
+        "    font-family: 'Inter', sans-serif !important;",
+        "    font-weight: 500 !important;",
+        "    font-size: 0.9rem !important;",
+        "    color: #94A3B8 !important;",
+        "    letter-spacing: 0.2px;",
+        "}",
+        "section[data-testid='stSidebar'] div[role='radiogroup'] label[data-checked='true'] {",
+        "    background: linear-gradient(135deg, rgba(14,165,233,0.16), rgba(99,102,241,0.14));",
+        "    border-color: rgba(56, 189, 248, 0.35);",
+        "    box-shadow: inset 0 0 0 1px rgba(56,189,248,0.15);",
+        "}",
+        "section[data-testid='stSidebar'] div[role='radiogroup'] label[data-checked='true'] p {",
+        "    color: #F8FAFC !important;",
+        "    font-weight: 600 !important;",
+        "}",
+
+        # ---------- TABS ----------
+        "button[data-baseweb='tab'] {",
+        "    font-family: 'Inter', sans-serif;",
+        "    font-weight: 500;",
+        "    color: #64748B !important;",
+        "}",
+        "button[data-baseweb='tab'][aria-selected='true'] {",
+        "    color: #38BDF8 !important;",
+        "}",
+
+        # ---------- DIVIDER ----------
+        "hr {",
+        "    border-color: rgba(255,255,255,0.08) !important;",
+        "}",
+
         "</style>"
     ]
     st.markdown("\n".join(css_lines), unsafe_allow_html=True)
@@ -132,6 +295,7 @@ def apply_custom_styles(bg_url):
 # ---------------- API HELPER FUNCTIONS ----------------
 @st.cache_data(ttl=1800)
 def geocode_city(city_name):
+    city_name = str(city_name).strip()
     url = "https://geocoding-api.open-meteo.com/v1/search?name=" + str(city_name) + "&count=1&language=en&format=json"
     try:
         response = requests.get(url, timeout=10)
@@ -189,13 +353,14 @@ def decode_wmo_code(code):
 def page_home():
     apply_custom_styles("https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=1920&q=80")
 
-    st.title("WEATHER FORECAST ⚡")
+    st.markdown('<div class="hero-title">Weather Forecast</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-subtitle">Live meteorological intelligence, refined</div>', unsafe_allow_html=True)
 
     with st.form(key="search_form"):
         col_search, col_opts1, col_opts2 = st.columns([2.5, 1, 1])
 
         with col_search:
-            default_city = st.session_state.get("active_city", "Karachi")
+            default_city = st.session_state.get("active_city", "Karachi").strip()
             city_input = st.text_input("SEARCH CITY", value=default_city, placeholder="e.g. Karachi, Tokyo, London, New York")
 
         with col_opts1:
@@ -204,21 +369,22 @@ def page_home():
         with col_opts2:
             speed_unit = st.selectbox("WIND SPEED", ["km/h", "m/s"])
 
-        submit_btn = st.form_submit_button("GET METEOROLOGICAL FORECAST 🔍")
+        submit_btn = st.form_submit_button("Get Meteorological Forecast")
 
     if submit_btn:
-        if city_input.strip():
-            st.session_state["active_city"] = city_input.strip()
+        cleaned_city = city_input.strip()
+        if cleaned_city:
+            st.session_state["active_city"] = cleaned_city
         else:
             st.warning("Please enter a valid city name.")
 
     col_reset, _ = st.columns([1, 3])
     with col_reset:
-        if st.button("🔄 Reset / Search Another City"):
+        if st.button("Reset / Search Another City"):
             st.session_state["active_city"] = ""
             st.rerun()
 
-    active_city = st.session_state.get("active_city", "Karachi")
+    active_city = st.session_state.get("active_city", "Karachi").strip()
     if not active_city:
         active_city = "Karachi"
 
@@ -238,10 +404,10 @@ def page_home():
 
     curr = weather["current"]
     w_desc, w_icon = decode_wmo_code(curr["weather_code"])
-    
+
     t_curr = curr["temperature_2m"]
     t_feels = curr["apparent_temperature"]
-    
+
     if "Fahrenheit" in unit:
         t_curr = (t_curr * 1.8) + 32
         t_feels = (t_feels * 1.8) + 32
@@ -252,26 +418,26 @@ def page_home():
     wind_spd = curr["wind_speed_10m"]
     if speed_unit == "m/s":
         wind_spd = wind_spd / 3.6
-    
+
     st.markdown("---")
 
     card_lines = [
         '<div class="glass-card">',
         '<h2 style="margin-bottom:0px;">' + str(w_icon) + ' ' + str(city_full) + '</h2>',
-        '<p style="color:#94A3B8 !important; margin-top:2px; font-size:0.9rem;">Coordinates: ' + f'{lat:.2f}' + '°N, ' + f'{lon:.2f}' + '°E</p>',
-        '<h1 style="font-size: 3.8rem; margin: 12px 0; color:#38BDF8 !important;">' + f'{t_curr:.1f}' + ' ' + str(u_sym) + ' <span style="font-size:1.6rem; font-weight:400; color:#CBD5E1 !important;">(' + str(w_desc) + ')</span></h1>',
-        '<div style="margin-top:15px;">',
-        '<span class="badge">Feels Like: ' + f'{t_feels:.1f}' + ' ' + str(u_sym) + '</span>',
-        '<span class="badge">Humidity: ' + str(curr['relative_humidity_2m']) + '%</span>',
-        '<span class="badge">Wind: ' + f'{wind_spd:.1f}' + ' ' + str(speed_unit) + '</span>',
-        '<span class="badge">Pressure: ' + str(curr['surface_pressure']) + ' hPa</span>',
+        '<p style="color:#64748B !important; margin-top:4px; font-size:0.85rem; letter-spacing:0.3px;">COORDINATES · ' + f'{lat:.2f}' + '°N, ' + f'{lon:.2f}' + '°E</p>',
+        '<h1 style="font-size: 3.8rem; margin: 14px 0; color:#38BDF8 !important; font-weight:700;">' + f'{t_curr:.1f}' + ' ' + str(u_sym) + ' <span style="font-size:1.5rem; font-weight:400; color:#94A3B8 !important;">' + str(w_desc) + '</span></h1>',
+        '<div style="margin-top:16px;">',
+        '<span class="badge">Feels Like &nbsp;' + f'{t_feels:.1f}' + ' ' + str(u_sym) + '</span>',
+        '<span class="badge">Humidity &nbsp;' + str(curr['relative_humidity_2m']) + '%</span>',
+        '<span class="badge">Wind &nbsp;' + f'{wind_spd:.1f}' + ' ' + str(speed_unit) + '</span>',
+        '<span class="badge">Pressure &nbsp;' + str(curr['surface_pressure']) + ' hPa</span>',
         '</div>',
         '</div>'
     ]
     st.markdown("".join(card_lines), unsafe_allow_html=True)
 
     # 24-Hour Plotly Graph
-    st.markdown("### 📈 24-Hour Temperature Trend")
+    st.markdown("### 24-Hour Temperature Trend")
     hourly = weather["hourly"]
     h_times = [datetime.datetime.fromisoformat(t).strftime("%H:00") for t in hourly["time"][:24]]
     h_temps = hourly["temperature_2m"][:24]
@@ -286,15 +452,17 @@ def page_home():
             y=h_temps,
             mode="lines+markers",
             name="Temp (" + str(u_sym) + ")",
-            line=dict(color="#0EA5E9", width=3, shape="spline"),
+            line=dict(color="#38BDF8", width=3, shape="spline"),
+            marker=dict(size=5, color="#818CF8"),
             fill="tozeroy",
-            fillcolor="rgba(14, 165, 233, 0.15)"
+            fillcolor="rgba(56, 189, 233, 0.14)"
         )
     )
     fig_hourly.update_layout(
         template="plotly_dark",
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Inter, sans-serif", color="#94A3B8"),
         xaxis_title="Time of Day",
         yaxis_title="Temperature (" + str(u_sym) + ")",
         margin=dict(l=20, r=20, t=20, b=20),
@@ -303,7 +471,7 @@ def page_home():
     st.plotly_chart(fig_hourly, use_container_width=True)
 
     # 7-Day Forecast Chart
-    st.markdown("### 🗓️ 7-Day Extended Forecast")
+    st.markdown("### 7-Day Extended Forecast")
     daily = weather["daily"]
     d_dates = [datetime.datetime.fromisoformat(d).strftime("%a, %b %d") for d in daily["time"]]
     d_max = daily["temperature_2m_max"]
@@ -319,12 +487,13 @@ def page_home():
 
     fig_daily = go.Figure()
     fig_daily.add_trace(go.Bar(x=d_dates, y=d_max, name="Max Temp (" + str(u_sym) + ")", marker_color="#38BDF8"))
-    fig_daily.add_trace(go.Bar(x=d_dates, y=d_min, name="Min Temp (" + str(u_sym) + ")", marker_color="#1E40AF"))
-    
+    fig_daily.add_trace(go.Bar(x=d_dates, y=d_min, name="Min Temp (" + str(u_sym) + ")", marker_color="#4F46E5"))
+
     fig_daily.update_layout(
         template="plotly_dark",
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Inter, sans-serif", color="#94A3B8"),
         barmode="group",
         margin=dict(l=20, r=20, t=20, b=20),
         height=340
@@ -332,7 +501,7 @@ def page_home():
     st.plotly_chart(fig_daily, use_container_width=True)
 
     # Data Tables
-    st.markdown("### 📊 Tabular Breakdown")
+    st.markdown("### Tabular Breakdown")
     tab1, tab2 = st.tabs(["7-Day Daily Forecast Data", "Hourly Forecast Data (Next 24h)"])
 
     with tab1:
@@ -361,28 +530,29 @@ def page_home():
             hide_index=True
         )
 
-    st.caption("Crafted by **Hafiz Muhammad Ubaid** | Powered by Open-Meteo Meteorological API")
+    st.caption("Crafted by **Hafiz Muhammad Ubaid** · Powered by Open-Meteo Meteorological API")
 
 # ---------------- PAGE: ABOUT ----------------
 def page_about():
     apply_custom_styles("https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&w=1920&q=80")
 
-    st.title("📜 ABOUT THE PROJECT")
-    
+    st.markdown('<div class="hero-title">About the Project</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-subtitle">Design philosophy &amp; technical overview</div>', unsafe_allow_html=True)
+
     about_lines = [
         '<div class="glass-card">',
-        '<h2>WEATHER FORECAST BY HAFIZ MUHAMMAD UBAID ✪</h2>',
-        '<p>Welcome to <b>WEATHER FORECAST BY HAFIZ MUHAMMAD UBAID ✪</b> — a modern, interactive weather tracking platform designed to offer high-precision, real-time meteorological insight for cities across the globe.</p>',
-        '<hr style="border-color: rgba(255,255,255,0.1);">',
-        '<h3>🚀 Advanced Features</h3>',
+        '<h2>Weather Forecast — Hafiz Muhammad Ubaid</h2>',
+        '<p>Welcome to <b>Weather Forecast</b> — a modern, interactive weather tracking platform designed to offer high-precision, real-time meteorological insight for cities across the globe.</p>',
+        '<hr>',
+        '<h3>Advanced Features</h3>',
         '<ul>',
         '<li><b>Seamless City Search:</b> Instantly toggle between multiple cities without refreshing the browser manually.</li>',
         '<li><b>Zero API Keys Required:</b> Powered by Open-Meteo\'s open-source meteorological API.</li>',
         '<li><b>Global Geocoding:</b> Auto-detects coordinates for any city worldwide.</li>',
         '<li><b>Interactive Analytics:</b> Glassmorphism UI rendered with Plotly analytics charts.</li>',
         '</ul>',
-        '<hr style="border-color: rgba(255,255,255,0.1);">',
-        '<h3>👨‍💻 Developer</h3>',
+        '<hr>',
+        '<h3>Developer</h3>',
         '<p>Designed and engineered by <b>Hafiz Muhammad Ubaid</b>.</p>',
         '</div>'
     ]
@@ -392,8 +562,9 @@ def page_about():
 def page_contact():
     apply_custom_styles("https://images.unsplash.com/photo-1516912481808-3406841bd33c?auto=format&fit=crop&w=1920&q=80")
 
-    st.title("📩 CONNECT WITH ME")
-    
+    st.markdown('<div class="hero-title">Connect</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-subtitle">Collaboration &amp; feedback channels</div>', unsafe_allow_html=True)
+
     email_address = "ubaidsajid2006@gmail.com"
     insta_link = "https://www.instagram.com/muhammadubaid__?stkn=eWV4ejI1MXh0Mndr&utm_source=qr"
     linkedin_link = "https://www.linkedin.com/in/muhammad-ubaid-2b88722b3?utm_source=share_via&utm_content=profile&utm_medium=member_ios"
@@ -401,11 +572,11 @@ def page_contact():
     contact_lines = [
         '<div class="glass-card">',
         '<h2>Hafiz Muhammad Ubaid</h2>',
-        '<p style="font-size: 1.05rem; color: #CBD5E1 !important;">Feel free to reach out for collaborations, feedback, or development inquiries!</p>',
-        '<hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">',
-        '<h3>🌐 Contact & Social Profiles</h3>',
-        '<p style="color: #94A3B8 !important;">Click any button below to email me or connect directly on my socials:</p>',
-        '<div style="margin-top: 20px; display: flex; align-items: center; gap: 10px;">',
+        '<p style="font-size: 1.02rem; color: #94A3B8 !important;">Feel free to reach out for collaborations, feedback, or development inquiries.</p>',
+        '<hr style="margin: 22px 0;">',
+        '<h3>Contact &amp; Social Profiles</h3>',
+        '<p style="color: #64748B !important; font-size:0.88rem;">Click any icon below to email me or connect directly on my socials.</p>',
+        '<div style="margin-top: 22px; display: flex; align-items: center; gap: 4px;">',
         '<a href="mailto:' + str(email_address) + '" class="social-icon-btn icon-email" title="Send Email"><i class="fa-solid fa-envelope"></i></a>',
         '<a href="' + str(insta_link) + '" target="_blank" class="social-icon-btn icon-insta" title="Instagram Profile"><i class="fa-brands fa-instagram"></i></a>',
         '<a href="' + str(linkedin_link) + '" target="_blank" class="social-icon-btn icon-linkedin" title="LinkedIn Profile"><i class="fa-brands fa-linkedin-in"></i></a>',
@@ -417,16 +588,19 @@ def page_contact():
 # ---------------- MAIN ROUTER ----------------
 def main():
     st.sidebar.markdown("""
-        <div style="text-align: center; padding: 10px 0 20px 0;">
-            <h2 style="margin:0; font-size: 1.4rem; color: #38BDF8 !important;">🌤️ WEATHER APP</h2>
-            <p style="font-size: 0.8rem; color: #94A3B8 !important; margin-top: 4px;">by Hafiz Muhammad Ubaid</p>
+        <div class="brand-block">
+            <div class="brand-mark"><i class="fa-solid fa-cloud-sun"></i></div>
+            <p class="brand-title">Weather Forecast</p>
+            <p class="brand-subtitle">by Hafiz Muhammad Ubaid</p>
         </div>
     """, unsafe_allow_html=True)
-    
+
+    st.sidebar.markdown('<p class="nav-caption">Navigation</p>', unsafe_allow_html=True)
+
     page = st.sidebar.radio(
-        "NAVIGATION", 
+        "Navigation",
         ["Home", "About", "Contact"],
-        format_func=lambda x: f"🏠  {x}" if x == "Home" else (f"ℹ️  {x}" if x == "About" else f"📩  {x}")
+        label_visibility="collapsed"
     )
 
     if page == "Home":
