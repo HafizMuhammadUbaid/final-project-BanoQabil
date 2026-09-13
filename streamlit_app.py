@@ -2,6 +2,7 @@ import streamlit as st
 import datetime
 import requests
 from collections import defaultdict
+from urllib.parse import quote
 from plotly import graph_objects as go
 
 OWM_BASE = "https://api.openweathermap.org"
@@ -629,18 +630,41 @@ def resolve_weather_theme(category, is_day):
     group = CATEGORY_THEMES.get(category, CATEGORY_THEMES["clear"])
     return group.get(variant, group["day"])
 
-def apply_dynamic_weather_background(category, is_day):
+# Primary single-word weather keyword per category, matched to the searched city + day/night
+# to build a dynamic (never hardcoded) real-photo background URL.
+CATEGORY_PHOTO_KEYWORD = {
+    "clear": "sunny",
+    "partly_cloudy": "cloudy",
+    "overcast": "cloudy",
+    "light_rain": "rainy",
+    "heavy_rain": "thunderstorm",
+    "snow": "snow",
+    "fog": "fog",
+}
+
+def build_dynamic_photo_url(category, is_day, city_name):
+    """Builds a keyword-driven Unsplash Source URL matching weather + local time + the exact searched city."""
+    weather_kw = CATEGORY_PHOTO_KEYWORD.get(category, "sky")
+    day_kw = "day" if is_day else "night"
+    city_kw = quote(str(city_name or "").strip()) or "city"
+    return "https://source.unsplash.com/1600x900/?" + weather_kw + "," + day_kw + "," + city_kw
+
+def apply_dynamic_weather_background(category, is_day, city_name):
     """
-    Paints the page with a rich CSS mesh gradient tailored to condition + local time.
-    A dynamic (keyword-based, never hardcoded) Unsplash Source texture is layered underneath
-    purely as a bonus accent -- if that request 404s or the service is unreachable, the mesh
-    gradient above it renders perfectly on its own, so the UI can never break.
+    Paints the page with a real, dynamically-fetched photo matching the exact weather condition,
+    local day/night state, and searched city -- topped with a dark readability overlay exactly as
+    specified. A rich CSS mesh gradient (matching the same condition/time) sits underneath as an
+    automatic safety net: if the photo endpoint is slow, blocked, or unreachable, the gradient still
+    renders a complete, premium-looking background, so the UI can never visibly break.
     """
     theme = resolve_weather_theme(category, is_day)
-    variant = "day" if is_day else "night"
-    unsplash_keywords = theme["keywords"] + "," + variant
-    fallback_photo_layer = "url('https://source.unsplash.com/1600x900/?" + unsplash_keywords + "')"
-    full_background = theme["gradient"] + ", " + fallback_photo_layer
+    photo_url = build_dynamic_photo_url(category, is_day, city_name)
+
+    dark_overlay = "linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55))"
+    photo_layer = "url('" + photo_url + "')"
+    mesh_fallback = theme["gradient"]
+
+    full_background = dark_overlay + ", " + photo_layer + ", " + mesh_fallback
 
     st.markdown(
         "<style>.stApp { "
@@ -780,6 +804,17 @@ def uv_risk_label(uv_value):
     return "Extreme"
 
 # ---------------- PAGE: HOME ----------------
+def sync_active_city():
+    """
+    Callback bound to the search widget's on_change/on_click.
+    Runs BEFORE the rerun that redraws the page, so by the time page_home()
+    executes, st.session_state['active_city'] already reflects the newest
+    input -- no stale weather data, no manual reset step required.
+    """
+    typed_city = st.session_state.get("city_input", "").strip()
+    if typed_city:
+        st.session_state["active_city"] = typed_city
+
 def page_home():
     apply_custom_styles()
 
@@ -791,37 +826,32 @@ def page_home():
         st.warning("Enter your free OpenWeatherMap API key in the sidebar to fetch live forecasts.")
         return
 
-    with st.form(key="search_form"):
-        col_search, col_opts1, col_opts2 = st.columns([2.5, 1, 1])
+    # Initialize session state exactly once -- never pass value= on the widget itself,
+    # since the widget's own key already owns that slot in session_state.
+    st.session_state.setdefault("active_city", "Karachi")
+    st.session_state.setdefault("city_input", st.session_state["active_city"])
 
-        with col_search:
-            default_city = st.session_state.get("active_city", "Karachi").strip()
-            city_input = st.text_input("SEARCH CITY", value=default_city, placeholder="e.g. Karachi, Tokyo, London, New York")
+    col_search, col_opts1, col_opts2, col_btn = st.columns([2.5, 1, 1, 1])
 
-        with col_opts1:
-            unit = st.selectbox("TEMPERATURE UNIT", ["Celsius (°C)", "Fahrenheit (°F)"])
+    with col_search:
+        st.text_input(
+            "SEARCH CITY",
+            key="city_input",
+            placeholder="e.g. Karachi, Tokyo, London, New York",
+            on_change=sync_active_city,
+        )
 
-        with col_opts2:
-            speed_unit = st.selectbox("WIND SPEED", ["km/h", "m/s"])
+    with col_opts1:
+        unit = st.selectbox("TEMPERATURE UNIT", ["Celsius (°C)", "Fahrenheit (°F)"], key="unit_select")
 
-        submit_btn = st.form_submit_button("Get Meteorological Forecast")
+    with col_opts2:
+        speed_unit = st.selectbox("WIND SPEED", ["km/h", "m/s"], key="speed_select")
 
-    if submit_btn:
-        cleaned_city = city_input.strip()
-        if cleaned_city:
-            st.session_state["active_city"] = cleaned_city
-        else:
-            st.warning("Please enter a valid city name.")
+    with col_btn:
+        st.markdown('<div style="height: 26px;"></div>', unsafe_allow_html=True)
+        st.button("Search", on_click=sync_active_city, use_container_width=True)
 
-    col_reset, _ = st.columns([1, 3])
-    with col_reset:
-        if st.button("Reset / Search Another City"):
-            st.session_state["active_city"] = ""
-            st.rerun()
-
-    active_city = st.session_state.get("active_city", "Karachi").strip()
-    if not active_city:
-        active_city = "Karachi"
+    active_city = st.session_state.get("active_city", "Karachi").strip() or "Karachi"
 
     owm_units = "imperial" if "Fahrenheit" in unit else "metric"
     u_sym = "°F" if "Fahrenheit" in unit else "°C"
@@ -853,7 +883,7 @@ def page_home():
     weather_category = get_weather_category(weather_block.get("id"))
     is_day = compute_is_day(current)
     local_time_str = get_local_time_str(current)
-    apply_dynamic_weather_background(weather_category, is_day)
+    apply_dynamic_weather_background(weather_category, is_day, geo.get("name", active_city))
 
     t_curr = main_block.get("temp", 0.0)
     t_feels = main_block.get("feels_like", 0.0)
