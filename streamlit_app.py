@@ -15,21 +15,137 @@ st.set_page_config(
 )
 
 # ---------------- CUSTOM CSS & STYLING ----------------
-def apply_custom_styles(bg_url, overlay=None):
-    overlay_start, overlay_end = overlay if overlay else ("rgba(6, 10, 20, 0.92)", "rgba(8, 13, 26, 0.96)")
+DEFAULT_MESH_BG = (
+    "radial-gradient(circle at 80% 8%, rgba(56,189,248,0.20) 0%, transparent 45%), "
+    "radial-gradient(circle at 8% 92%, rgba(99,102,241,0.20) 0%, transparent 50%), "
+    "linear-gradient(160deg, rgba(15,23,42,0.92) 0%, rgba(4,6,14,0.97) 100%)"
+)
+DEFAULT_BG_COLOR = "#05070d"
+
+def apply_custom_styles(background_css=None, bg_color=None):
+    background_css = background_css or DEFAULT_MESH_BG
+    bg_color = bg_color or DEFAULT_BG_COLOR
     css_lines = [
         "<style>",
         "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap');",
         "@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');",
 
-        # ---------- GLOBAL BACKDROP ----------
+        # ---------- GLOBAL BACKDROP (pure CSS mesh gradient, zero image dependency) ----------
         ".stApp {",
-        "    background: linear-gradient(160deg, " + overlay_start + ", " + overlay_end + "), url('" + bg_url + "') !important;",
+        "    background: " + background_css + " !important;",
+        "    background-color: " + bg_color + " !important;",
         "    background-attachment: fixed !important;",
         "    background-size: cover !important;",
         "    background-position: center !important;",
-        "    transition: background 0.7s ease-in-out;",
+        "    transition: background 0.8s ease-in-out, background-color 0.8s ease-in-out;",
         "    font-family: 'Inter', sans-serif;",
+        "}",
+
+        # ---------- CONTENT STACKING (keeps text/cards above the animated fx layer) ----------
+        "[data-testid='stAppViewContainer'] {",
+        "    position: relative;",
+        "    z-index: 1;",
+        "}",
+        "section[data-testid='stSidebar'] {",
+        "    z-index: 3 !important;",
+        "}",
+
+        # ---------- ANIMATED WEATHER FX LAYER (pure CSS, no images) ----------
+        ".weather-fx {",
+        "    position: fixed;",
+        "    inset: 0;",
+        "    z-index: 0;",
+        "    pointer-events: none;",
+        "    overflow: hidden;",
+        "}",
+        "@keyframes sunPulse {",
+        "    0%, 100% { opacity: 0.55; transform: scale(1); }",
+        "    50% { opacity: 0.9; transform: scale(1.08); }",
+        "}",
+        ".weather-fx.fx-sun {",
+        "    background: radial-gradient(circle at 80% 16%, rgba(255,214,130,0.9) 0%, rgba(255,178,90,0.35) 18%, transparent 42%);",
+        "    animation: sunPulse 6s ease-in-out infinite;",
+        "}",
+        "@keyframes twinkle {",
+        "    0%, 100% { opacity: 0.3; }",
+        "    50% { opacity: 0.95; }",
+        "}",
+        ".weather-fx.fx-stars {",
+        "    background-image:",
+        "        radial-gradient(1.4px 1.4px at 10% 20%, #ffffff 100%, transparent 100%),",
+        "        radial-gradient(1px 1px at 30% 65%, #ffffff 100%, transparent 100%),",
+        "        radial-gradient(1.8px 1.8px at 50% 15%, #ffffff 100%, transparent 100%),",
+        "        radial-gradient(1px 1px at 70% 45%, #ffffff 100%, transparent 100%),",
+        "        radial-gradient(1.4px 1.4px at 85% 75%, #ffffff 100%, transparent 100%),",
+        "        radial-gradient(1px 1px at 15% 85%, #ffffff 100%, transparent 100%),",
+        "        radial-gradient(1.8px 1.8px at 95% 30%, #ffffff 100%, transparent 100%),",
+        "        radial-gradient(1px 1px at 60% 92%, #ffffff 100%, transparent 100%);",
+        "    background-repeat: repeat;",
+        "    background-size: 320px 320px;",
+        "    opacity: 0.55;",
+        "    animation: twinkle 4.5s ease-in-out infinite;",
+        "}",
+        "@keyframes rainFall {",
+        "    0% { background-position: 0 0; }",
+        "    100% { background-position: -60px 220px; }",
+        "}",
+        ".weather-fx.fx-rain {",
+        "    background-image: repeating-linear-gradient(115deg, rgba(180,210,255,0.16) 0px, rgba(180,210,255,0.16) 1px, transparent 1px, transparent 15px);",
+        "    background-size: 220% 220%;",
+        "    animation: rainFall 0.6s linear infinite;",
+        "}",
+        ".weather-fx.fx-storm {",
+        "    background-image: repeating-linear-gradient(115deg, rgba(190,215,255,0.26) 0px, rgba(190,215,255,0.26) 2px, transparent 2px, transparent 11px);",
+        "    background-size: 220% 220%;",
+        "    animation: rainFall 0.4s linear infinite;",
+        "}",
+        "@keyframes stormFlash {",
+        "    0%, 91%, 100% { opacity: 0; }",
+        "    92%, 95% { opacity: 0.35; }",
+        "    93.5% { opacity: 0.05; }",
+        "}",
+        ".weather-fx.fx-storm::after {",
+        "    content: '';",
+        "    position: absolute;",
+        "    inset: 0;",
+        "    background: radial-gradient(circle at 50% 15%, rgba(255,255,255,0.9), transparent 60%);",
+        "    animation: stormFlash 7s infinite;",
+        "}",
+        "@keyframes fogDrift {",
+        "    0% { transform: translateX(-12%); }",
+        "    50% { transform: translateX(12%); }",
+        "    100% { transform: translateX(-12%); }",
+        "}",
+        ".weather-fx.fx-fog {",
+        "    background: linear-gradient(90deg, transparent, rgba(200,230,225,0.16), transparent);",
+        "    background-size: 200% 100%;",
+        "    animation: fogDrift 14s ease-in-out infinite;",
+        "}",
+        "@keyframes snowFall {",
+        "    0% { background-position: 0 0, 0 0, 0 0, 0 0; }",
+        "    100% { background-position: 0 420px, 0 320px, 0 520px, 0 380px; }",
+        "}",
+        ".weather-fx.fx-snow {",
+        "    background-image:",
+        "        radial-gradient(2px 2px at 10% 0%, #ffffff, transparent),",
+        "        radial-gradient(1.5px 1.5px at 40% 0%, #ffffff, transparent),",
+        "        radial-gradient(2.4px 2.4px at 70% 0%, #ffffff, transparent),",
+        "        radial-gradient(1.5px 1.5px at 90% 0%, #ffffff, transparent);",
+        "    background-repeat: repeat-y;",
+        "    background-size: 110px 420px, 150px 320px, 190px 520px, 130px 380px;",
+        "    opacity: 0.7;",
+        "    animation: snowFall 9s linear infinite;",
+        "}",
+        "@keyframes cloudDrift {",
+        "    0% { transform: translateX(-6%); }",
+        "    50% { transform: translateX(6%); }",
+        "    100% { transform: translateX(-6%); }",
+        "}",
+        ".weather-fx.fx-clouds {",
+        "    background:",
+        "        radial-gradient(ellipse at 20% 30%, rgba(255,255,255,0.12), transparent 55%),",
+        "        radial-gradient(ellipse at 70% 60%, rgba(255,255,255,0.08), transparent 60%);",
+        "    animation: cloudDrift 18s ease-in-out infinite;",
         "}",
 
         "#MainMenu, footer {visibility: hidden;}",
@@ -320,9 +436,7 @@ def apply_custom_styles(bg_url, overlay=None):
     ]
     st.markdown("\n".join(css_lines), unsafe_allow_html=True)
 
-# ---------------- DYNAMIC WEATHER BACKGROUND ----------------
-DEFAULT_BG_IMAGE = "https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=1920&q=80"
-DEFAULT_OVERLAY = ("rgba(6, 10, 20, 0.92)", "rgba(8, 13, 26, 0.96)")
+# ---------------- DYNAMIC WEATHER BACKGROUND (pure CSS mesh gradients, zero hardcoded image IDs) ----------------
 
 # 7 granular condition categories, each resolved from OpenWeatherMap's precise
 # numeric weather-condition "id" (far more specific than the coarse "main" string).
@@ -389,89 +503,158 @@ def get_local_time_str(current_json):
     except Exception:
         return "N/A"
 
-# High-definition, non-repetitive background photo per category, split day / night (14 unique scenes)
-THEME_IMAGES = {
+# Rich, multi-layer CSS mesh gradient per category + day/night (14 unique looks, zero images required).
+# Each entry: "gradient" (the visual), "bg_color" (opaque safety-net fallback), "fx" (animated overlay
+# class), and "keywords" (used only to build an optional Unsplash Source texture layered underneath).
+CATEGORY_THEMES = {
     "clear": {
-        "day": "https://images.unsplash.com/photo-1601297183305-6df142704ea2?auto=format&fit=crop&w=1920&q=80",
-        "night": "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80",
+        "day": {
+            "gradient": (
+                "radial-gradient(circle at 82% 12%, rgba(255,196,90,0.85) 0%, rgba(255,170,70,0.35) 20%, transparent 45%), "
+                "radial-gradient(circle at 15% 85%, rgba(56,189,248,0.25) 0%, transparent 55%), "
+                "linear-gradient(160deg, rgba(30,74,140,0.55) 0%, rgba(10,20,40,0.88) 100%)"
+            ),
+            "bg_color": "#0b2340", "fx": "fx-sun", "keywords": "sunny,blue,sky",
+        },
+        "night": {
+            "gradient": (
+                "radial-gradient(circle at 50% 0%, rgba(88,28,135,0.55) 0%, transparent 50%), "
+                "radial-gradient(circle at 20% 70%, rgba(30,64,175,0.35) 0%, transparent 55%), "
+                "linear-gradient(180deg, rgba(6,8,20,0.9) 0%, rgba(2,3,10,0.97) 100%)"
+            ),
+            "bg_color": "#04050d", "fx": "fx-stars", "keywords": "night,stars,sky",
+        },
     },
     "partly_cloudy": {
-        "day": "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1920&q=80",
-        "night": "https://images.unsplash.com/photo-1533104816931-20fa691ff6ca?auto=format&fit=crop&w=1920&q=80",
+        "day": {
+            "gradient": (
+                "radial-gradient(circle at 75% 20%, rgba(255,220,150,0.40) 0%, transparent 40%), "
+                "linear-gradient(150deg, rgba(70,110,160,0.55) 0%, rgba(20,30,55,0.88) 100%)"
+            ),
+            "bg_color": "#101d33", "fx": "fx-clouds", "keywords": "clouds,sky,day",
+        },
+        "night": {
+            "gradient": (
+                "radial-gradient(circle at 30% 20%, rgba(148,163,184,0.25) 0%, transparent 45%), "
+                "linear-gradient(160deg, rgba(20,26,46,0.85) 0%, rgba(6,8,16,0.95) 100%)"
+            ),
+            "bg_color": "#080b14", "fx": "fx-clouds", "keywords": "clouds,night,sky",
+        },
     },
     "overcast": {
-        "day": "https://images.unsplash.com/photo-1499956827185-0d63ee78a910?auto=format&fit=crop&w=1920&q=80",
-        "night": "https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?auto=format&fit=crop&w=1920&q=80",
+        "day": {
+            "gradient": (
+                "radial-gradient(circle at 50% 0%, rgba(148,163,184,0.35) 0%, transparent 55%), "
+                "linear-gradient(165deg, rgba(51,65,85,0.75) 0%, rgba(15,20,32,0.92) 100%)"
+            ),
+            "bg_color": "#0d1119", "fx": "fx-clouds", "keywords": "overcast,grey,sky",
+        },
+        "night": {
+            "gradient": (
+                "radial-gradient(circle at 50% 0%, rgba(71,85,105,0.30) 0%, transparent 55%), "
+                "linear-gradient(165deg, rgba(15,20,32,0.88) 0%, rgba(4,5,10,0.96) 100%)"
+            ),
+            "bg_color": "#040508", "fx": "fx-clouds", "keywords": "overcast,night",
+        },
     },
     "light_rain": {
-        "day": "https://images.unsplash.com/photo-1519692933481-e162a57d6721?auto=format&fit=crop&w=1920&q=80",
-        "night": "https://images.unsplash.com/photo-1428592953211-077101b2021b?auto=format&fit=crop&w=1920&q=80",
+        "day": {
+            "gradient": (
+                "radial-gradient(circle at 70% 10%, rgba(96,165,250,0.30) 0%, transparent 45%), "
+                "linear-gradient(165deg, rgba(30,58,95,0.78) 0%, rgba(8,14,26,0.92) 100%)"
+            ),
+            "bg_color": "#081019", "fx": "fx-rain", "keywords": "rain,drizzle,city",
+        },
+        "night": {
+            "gradient": (
+                "radial-gradient(circle at 30% 10%, rgba(59,130,246,0.22) 0%, transparent 45%), "
+                "linear-gradient(165deg, rgba(8,14,26,0.88) 0%, rgba(2,4,10,0.96) 100%)"
+            ),
+            "bg_color": "#020409", "fx": "fx-rain", "keywords": "rain,night,city",
+        },
     },
     "heavy_rain": {
-        "day": "https://images.unsplash.com/photo-1500674425229-f692875b0ab3?auto=format&fit=crop&w=1920&q=80",
-        "night": "https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?auto=format&fit=crop&w=1920&q=80",
+        "day": {
+            "gradient": (
+                "radial-gradient(circle at 50% 0%, rgba(30,41,59,0.60) 0%, transparent 55%), "
+                "linear-gradient(165deg, rgba(17,24,39,0.85) 0%, rgba(3,4,10,0.95) 100%)"
+            ),
+            "bg_color": "#020308", "fx": "fx-storm", "keywords": "thunderstorm,dark,rain",
+        },
+        "night": {
+            "gradient": (
+                "radial-gradient(circle at 50% 10%, rgba(30,27,75,0.50) 0%, transparent 50%), "
+                "linear-gradient(165deg, rgba(8,7,20,0.9) 0%, rgba(1,1,4,0.97) 100%)"
+            ),
+            "bg_color": "#010104", "fx": "fx-storm", "keywords": "thunderstorm,night,lightning",
+        },
     },
     "snow": {
-        "day": "https://images.unsplash.com/photo-1477601263568-180e2c6d046e?auto=format&fit=crop&w=1920&q=80",
-        "night": "https://images.unsplash.com/photo-1483664852095-d6cc6870702d?auto=format&fit=crop&w=1920&q=80",
+        "day": {
+            "gradient": (
+                "radial-gradient(circle at 50% 0%, rgba(226,232,240,0.40) 0%, transparent 55%), "
+                "linear-gradient(165deg, rgba(100,116,139,0.50) 0%, rgba(15,23,42,0.88) 100%)"
+            ),
+            "bg_color": "#0c1424", "fx": "fx-snow", "keywords": "snow,winter,day",
+        },
+        "night": {
+            "gradient": (
+                "radial-gradient(circle at 50% 0%, rgba(148,163,184,0.22) 0%, transparent 55%), "
+                "linear-gradient(165deg, rgba(15,23,42,0.85) 0%, rgba(4,6,14,0.96) 100%)"
+            ),
+            "bg_color": "#04060e", "fx": "fx-snow", "keywords": "snow,winter,night",
+        },
     },
     "fog": {
-        "day": "https://images.unsplash.com/photo-1543968996-ee822b8176ba?auto=format&fit=crop&w=1920&q=80",
-        "night": "https://images.unsplash.com/photo-1508361001413-7a9dca21d08a?auto=format&fit=crop&w=1920&q=80",
-    },
-}
-
-# Overlay tint per category / time-of-day, tuned so glass cards & text stay fully legible
-THEME_OVERLAYS = {
-    "clear": {
-        "day": ("rgba(15, 45, 90, 0.42)", "rgba(6, 10, 22, 0.80)"),
-        "night": ("rgba(3, 6, 18, 0.78)", "rgba(2, 4, 12, 0.94)"),
-    },
-    "partly_cloudy": {
-        "day": ("rgba(25, 50, 85, 0.48)", "rgba(10, 16, 30, 0.82)"),
-        "night": ("rgba(8, 12, 26, 0.75)", "rgba(4, 6, 16, 0.93)"),
-    },
-    "overcast": {
-        "day": ("rgba(30, 41, 59, 0.60)", "rgba(8, 13, 26, 0.86)"),
-        "night": ("rgba(6, 9, 18, 0.78)", "rgba(4, 6, 14, 0.94)"),
-    },
-    "light_rain": {
-        "day": ("rgba(10, 28, 48, 0.62)", "rgba(6, 11, 20, 0.88)"),
-        "night": ("rgba(5, 10, 20, 0.78)", "rgba(2, 5, 12, 0.94)"),
-    },
-    "heavy_rain": {
-        "day": ("rgba(12, 10, 28, 0.72)", "rgba(4, 4, 12, 0.92)"),
-        "night": ("rgba(6, 5, 16, 0.82)", "rgba(2, 2, 8, 0.96)"),
-    },
-    "snow": {
-        "day": ("rgba(51, 65, 85, 0.42)", "rgba(10, 15, 29, 0.80)"),
-        "night": ("rgba(10, 14, 26, 0.75)", "rgba(4, 6, 14, 0.92)"),
-    },
-    "fog": {
-        "day": ("rgba(30, 35, 45, 0.62)", "rgba(8, 11, 18, 0.85)"),
-        "night": ("rgba(6, 8, 14, 0.78)", "rgba(3, 4, 10, 0.93)"),
+        "day": {
+            "gradient": (
+                "radial-gradient(circle at 50% 30%, rgba(45,212,191,0.18) 0%, transparent 55%), "
+                "linear-gradient(165deg, rgba(51,65,85,0.60) 0%, rgba(15,23,42,0.90) 100%)"
+            ),
+            "bg_color": "#0b1420", "fx": "fx-fog", "keywords": "fog,mist,teal",
+        },
+        "night": {
+            "gradient": (
+                "radial-gradient(circle at 50% 30%, rgba(45,212,191,0.12) 0%, transparent 55%), "
+                "linear-gradient(165deg, rgba(10,15,25,0.88) 0%, rgba(3,5,10,0.96) 100%)"
+            ),
+            "bg_color": "#03050a", "fx": "fx-fog", "keywords": "fog,night,mist",
+        },
     },
 }
 
 def resolve_weather_theme(category, is_day):
-    """Return (background_image_url, (overlay_start, overlay_end)) for a granular weather category."""
+    """Return the full theme dict (gradient, bg_color, fx class, keywords) for a granular weather category."""
     variant = "day" if is_day else "night"
-    if category not in THEME_IMAGES:
-        return DEFAULT_BG_IMAGE, DEFAULT_OVERLAY
-    bg_url = THEME_IMAGES.get(category, {}).get(variant, DEFAULT_BG_IMAGE)
-    overlay = THEME_OVERLAYS.get(category, {}).get(variant, DEFAULT_OVERLAY)
-    return bg_url, overlay
+    group = CATEGORY_THEMES.get(category, CATEGORY_THEMES["clear"])
+    return group.get(variant, group["day"])
 
 def apply_dynamic_weather_background(category, is_day):
-    """Injects a style block that overrides just the .stApp background, matching condition + local time."""
-    bg_url, (overlay_start, overlay_end) = resolve_weather_theme(category, is_day)
+    """
+    Paints the page with a rich CSS mesh gradient tailored to condition + local time.
+    A dynamic (keyword-based, never hardcoded) Unsplash Source texture is layered underneath
+    purely as a bonus accent -- if that request 404s or the service is unreachable, the mesh
+    gradient above it renders perfectly on its own, so the UI can never break.
+    """
+    theme = resolve_weather_theme(category, is_day)
+    variant = "day" if is_day else "night"
+    unsplash_keywords = theme["keywords"] + "," + variant
+    fallback_photo_layer = "url('https://source.unsplash.com/1600x900/?" + unsplash_keywords + "')"
+    full_background = theme["gradient"] + ", " + fallback_photo_layer
+
     st.markdown(
-        "<style>.stApp { background: linear-gradient(160deg, " + overlay_start + ", " + overlay_end +
-        "), url('" + bg_url + "') !important; background-attachment: fixed !important; "
-        "background-size: cover !important; background-position: center !important; "
-        "transition: background 0.7s ease-in-out; }</style>",
+        "<style>.stApp { "
+        "background: " + full_background + " !important; "
+        "background-color: " + theme["bg_color"] + " !important; "
+        "background-attachment: fixed !important; "
+        "background-size: cover !important; "
+        "background-position: center !important; "
+        "transition: background 0.8s ease-in-out; "
+        "}</style>",
         unsafe_allow_html=True
     )
+    st.markdown('<div class="weather-fx ' + theme["fx"] + '"></div>', unsafe_allow_html=True)
+
 
 
 
@@ -598,7 +781,7 @@ def uv_risk_label(uv_value):
 
 # ---------------- PAGE: HOME ----------------
 def page_home():
-    apply_custom_styles(DEFAULT_BG_IMAGE)
+    apply_custom_styles()
 
     st.markdown('<div class="hero-title">Weather Forecast</div>', unsafe_allow_html=True)
     st.markdown('<div class="hero-subtitle">Live meteorological intelligence, refined</div>', unsafe_allow_html=True)
@@ -829,7 +1012,7 @@ def page_home():
 
 # ---------------- PAGE: ABOUT ----------------
 def page_about():
-    apply_custom_styles("https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&w=1920&q=80")
+    apply_custom_styles()
 
     st.markdown('<div class="hero-title">About the Project</div>', unsafe_allow_html=True)
     st.markdown('<div class="hero-subtitle">Design philosophy &amp; technical overview</div>', unsafe_allow_html=True)
@@ -855,7 +1038,7 @@ def page_about():
 
 # ---------------- PAGE: CONTACT ----------------
 def page_contact():
-    apply_custom_styles("https://images.unsplash.com/photo-1516912481808-3406841bd33c?auto=format&fit=crop&w=1920&q=80")
+    apply_custom_styles()
 
     st.markdown('<div class="hero-title">Connect</div>', unsafe_allow_html=True)
     st.markdown('<div class="hero-subtitle">Collaboration &amp; feedback channels</div>', unsafe_allow_html=True)
