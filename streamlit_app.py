@@ -206,11 +206,19 @@ def render_dynamic_weather_background(category, is_day, city_name):
     Layers three backdrop tiers, back to front:
       1) A pure-CSS mesh gradient (instant, cannot fail) -- z-index -3
       2) A keyword-matched Unsplash photo -- z-index -2
-      3) A full-screen looping MP4 for the matched weather condition -- z-index -1
+      3) A full-screen looping, silent, controls-free MP4 for the matched weather
+         condition -- z-index -1
     A semi-transparent dark scrim sits on top of all three so text/inputs stay legible.
-    If the <video> fails to load (network blocked, dead link, etc.) a tiny inline
-    handler hides it, and the photo/gradient tiers show straight through -- the UI can
-    never visibly break.
+
+    The <video> carries every attribute mobile browsers require for a true
+    background-style autoplay loop (autoplay, loop, muted, playsinline +
+    webkit-playsinline, no controls, no picture-in-picture/remote-playback affordances).
+    Position/size/z-index are set both via the stylesheet below AND as inline styles on
+    the tag itself, so the fixed full-bleed placement holds even if a class selector
+    ever fails to match. If the clip 404s or the browser blocks it outright, the
+    <source>'s onerror handler removes the element from the layout entirely (rather
+    than leaving a paused frame with a native play button) and the photo/gradient
+    tiers underneath show straight through -- the UI can never visibly break.
     """
     theme = resolve_weather_theme(category, is_day)
     photo_url = build_dynamic_photo_url(category, is_day, city_name)
@@ -222,12 +230,20 @@ def render_dynamic_weather_background(category, is_day, city_name):
         unsafe_allow_html=True
     )
 
+    video_inline_style = (
+        "position:fixed;top:0;left:0;width:100vw;height:100vh;"
+        "object-fit:cover;pointer-events:none;z-index:-1;background:#000;"
+    )
+
     backdrop_html = f"""
     <div class="bg-photo-layer" style="background-image:url('{photo_url}');"></div>
     <div class="bg-video-layer">
-        <video id="wx-video" autoplay muted loop playsinline preload="auto" poster="{video['poster']}">
+        <video id="wx-video" class="wx-bg-video" style="{video_inline_style}"
+               autoplay loop muted playsinline webkit-playsinline="true"
+               disablePictureInPicture disableRemotePlayback
+               preload="auto" poster="{video['poster']}">
             <source src="{video['src']}" type="video/mp4"
-                    onerror="var v=document.getElementById('wx-video'); if(v){{v.style.display='none';}}">
+                    onerror="var w=document.getElementById('wx-video'); if(w){{w.parentNode.removeChild(w);}}">
         </video>
     </div>
     <div class="bg-dark-scrim"></div>
@@ -304,15 +320,25 @@ def apply_custom_styles():
         "@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');",
 
         # ---------- RESET / FULL-BLEED IMMERSION ----------
-        "html, body, .stApp { margin:0 !important; padding:0 !important; font-family:'Inter',sans-serif; }",
+        "html, body, .stApp { margin:0 !important; padding:0 !important; font-family:'Inter',sans-serif; overflow-x:hidden; }",
         ".block-container { padding-top: 1.2rem !important; padding-bottom: 2rem !important; max-width: 1300px !important; }",
         "#MainMenu, footer { visibility:hidden; }",
-        "header[data-testid='stHeader'] { background: transparent !important; box-shadow:none !important; }",
-        "[data-testid='stAppViewContainer'] { position:relative; z-index:1; background:transparent !important; }",
+        # Top nav bar (Streamlit header) and the sidebar sit in their own, much higher
+        # stacking layer than the background stack below, so they always stay clean
+        # and clickable above the video/photo/gradient.
+        "header[data-testid='stHeader'] {",
+        "    background: transparent !important; box-shadow:none !important;",
+        "    z-index: 1000 !important; position: relative;",
+        "}",
+        "[data-testid='stAppViewContainer'] { position:relative; z-index:10; background:transparent !important; }",
         "[data-testid='stAppViewContainer'] > .main { background:transparent !important; }",
-        "section[data-testid='stSidebar'] { z-index:5 !important; }",
+        "section[data-testid='stSidebar'] { z-index:1000 !important; }",
 
         # ---------- LAYERED VIDEO BACKGROUND STACK ----------
+        # Paint order, back to front: CSS gradient (-3) -> Unsplash photo (-2) ->
+        # looping MP4 (-1) -> dark legibility scrim (-1, painted after the video so it
+        # sits visually on top of it). Everything here is `position:fixed` + negative
+        # z-index, so it always renders behind the header/sidebar/content above.
         ".bg-photo-layer, .bg-video-layer, .bg-dark-scrim {",
         "    position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none;",
         "}",
@@ -321,9 +347,21 @@ def apply_custom_styles():
         "    transition:background-image 0.9s ease-in-out;",
         "}",
         ".bg-video-layer { z-index:-2; overflow:hidden; }",
-        ".bg-video-layer video {",
-        "    position:fixed; top:0; left:0; width:100vw; height:100vh;",
-        "    object-fit:cover; pointer-events:none; transition:opacity 0.9s ease-in-out;",
+        ".bg-video-layer video, video.wx-bg-video {",
+        "    position:fixed !important; top:0 !important; left:0 !important;",
+        "    width:100vw !important; height:100vh !important; object-fit:cover !important;",
+        "    pointer-events:none !important; z-index:-1 !important; background:#000;",
+        "    transition:opacity 0.9s ease-in-out;",
+        "}",
+        # Kill every native play/controls affordance a browser might still try to draw
+        # (this is what causes the centered play-button overlay, especially on
+        # Safari/iOS) so the clip reads purely as scenery, never as a media player.
+        ".bg-video-layer video::-webkit-media-controls,",
+        ".bg-video-layer video::-webkit-media-controls-start-playback-button,",
+        ".bg-video-layer video::-webkit-media-controls-play-button,",
+        ".bg-video-layer video::-webkit-media-controls-panel,",
+        ".bg-video-layer video::-webkit-media-controls-overlay-play-button {",
+        "    display:none !important; -webkit-appearance:none !important; opacity:0 !important;",
         "}",
         ".bg-dark-scrim { z-index:-1; background:rgba(0,0,0,0.45); }",
 
