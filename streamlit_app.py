@@ -574,7 +574,7 @@ def get_local_time_str(current_json):
 
 # Rich, multi-layer CSS mesh gradient per category + day/night (14 unique looks, zero images required).
 # Each entry: "gradient" (the visual), "bg_color" (opaque safety-net fallback), "fx" (animated overlay
-# class), and "keywords" (used only to build an optional Unsplash Source texture layered underneath).
+# class), and "keywords" (kept for reference/labeling only).
 CATEGORY_THEMES = {
     "clear": {
         "day": {
@@ -740,64 +740,21 @@ WEATHER_ICON_CLASS = {
 def get_weather_icon_class(category, is_day):
     return WEATHER_ICON_CLASS.get((category, is_day), "fa-solid fa-cloud")
 
-# Primary single-word weather keyword per category, matched to the searched city + day/night
-# to build a dynamic (never hardcoded) real-photo background query.
-CATEGORY_PHOTO_KEYWORD = {
-    "clear": "clear sky sunny",
-    "partly_cloudy": "partly cloudy sky",
-    "overcast": "overcast cloudy sky",
-    "light_rain": "light rain city",
-    "heavy_rain": "thunderstorm dramatic sky",
-    "snow": "snow winter landscape",
-    "fog": "fog mist landscape",
-}
+def apply_dynamic_weather_background(category, is_day):
+    """
+    Paints the page with a rich, ANIMATED CSS gradient mesh tuned to the exact weather
+    category and local day/night state -- always dynamic, no external photo dependency.
+    Also stores the active category/day-night state in session_state so every other
+    page in the app can reproduce the exact same background.
+    """
+    st.session_state["bg_weather_category"] = category
+    st.session_state["bg_is_day"] = is_day
 
-@st.cache_data(ttl=1800, show_spinner=False)
-def fetch_unsplash_photo_url(category, is_day, city_name, access_key):
-    """
-    Fetches a real, licensed photo from the official Unsplash API matching the exact
-    weather category + local day/night state (+ city as a soft hint). Returns None on
-    any failure so the caller can fall back to the vivid animated CSS mesh instead.
-    """
-    if not access_key:
-        return None
-    query = CATEGORY_PHOTO_KEYWORD.get(category, "sky") + (" day" if is_day else " night")
-    try:
-        resp = requests.get(
-            "https://api.unsplash.com/photos/random",
-            params={"query": query, "orientation": "landscape", "content_filter": "high"},
-            headers={"Authorization": "Client-ID " + access_key},
-            timeout=8,
-        )
-        if resp.status_code == 200:
-            data = resp.json()
-            urls = data.get("urls", {})
-            return urls.get("regular") or urls.get("full") or urls.get("small")
-    except Exception:
-        pass
-    return None
-
-def apply_dynamic_weather_background(category, is_day, city_name, unsplash_key=None):
-    """
-    Paints the page with a real, verified Unsplash photo matching the exact weather condition,
-    local day/night state, and searched city -- topped with a dark readability overlay. If no
-    Unsplash key is configured, or the fetch fails for any reason, the page automatically falls
-    back to a rich, ANIMATED CSS gradient tuned to the same condition/time, so the background is
-    always dynamic and never a broken link or a flat static color.
-    """
     theme = resolve_weather_theme(category, is_day)
-    photo_url = fetch_unsplash_photo_url(category, is_day, city_name, unsplash_key) if unsplash_key else None
-
     dark_overlay = "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45))"
-
-    if photo_url:
-        full_background = dark_overlay + ", url('" + photo_url + "'), " + theme["gradient"]
-        size_css = "background-size: cover !important;"
-        anim_css = ""
-    else:
-        full_background = dark_overlay + ", " + theme["gradient"]
-        size_css = "background-size: 320% 320% !important;"
-        anim_css = "animation: gradientShift 16s ease infinite !important;"
+    full_background = dark_overlay + ", " + theme["gradient"]
+    size_css = "background-size: 320% 320% !important;"
+    anim_css = "animation: gradientShift 16s ease infinite !important;"
 
     st.markdown(
         "<style>.stApp { "
@@ -812,6 +769,17 @@ def apply_dynamic_weather_background(category, is_day, city_name, unsplash_key=N
         unsafe_allow_html=True
     )
     st.markdown('<div class="weather-fx ' + theme["fx"] + '"></div>', unsafe_allow_html=True)
+
+def apply_active_weather_background():
+    """
+    Re-applies whichever weather background was last computed on the Home page
+    (stored in session_state), so the About and Contact pages show the exact same
+    live, dynamic background instead of the generic default mesh. Falls back to a
+    clear-sky daytime theme before any city has ever been searched.
+    """
+    category = st.session_state.get("bg_weather_category", "clear")
+    is_day = st.session_state.get("bg_is_day", True)
+    apply_dynamic_weather_background(category, is_day)
 
 
 
@@ -837,34 +805,6 @@ def get_api_key():
     )
     st.session_state["owm_api_key"] = entered_key.strip()
     st.sidebar.caption("Get a free key at openweathermap.org/api")
-    return entered_key.strip()
-
-def get_unsplash_key():
-    """
-    Resolve an OPTIONAL Unsplash API Access Key (st.secrets first, then a sidebar field).
-    When present, the app fetches a real, verified photo for the background. When absent
-    (or if the request fails), the app automatically falls back to a vivid, animated CSS
-    gradient tuned to the same weather condition -- so the UI always looks complete either way.
-    """
-    secret_key = ""
-    try:
-        secret_key = st.secrets.get("UNSPLASH_ACCESS_KEY", "")
-    except Exception:
-        secret_key = ""
-
-    if secret_key:
-        return secret_key.strip()
-
-    st.sidebar.markdown('<p class="nav-caption">Background Photos (Optional)</p>', unsafe_allow_html=True)
-    entered_key = st.sidebar.text_input(
-        "Unsplash Access Key",
-        value=st.session_state.get("unsplash_key", ""),
-        type="password",
-        placeholder="Optional: Unsplash Access Key",
-        label_visibility="collapsed"
-    )
-    st.session_state["unsplash_key"] = entered_key.strip()
-    st.sidebar.caption("Free at unsplash.com/developers · leave blank for animated gradients")
     return entered_key.strip()
 
 # ---------------- API HELPER FUNCTIONS ----------------
@@ -984,7 +924,6 @@ def page_home():
     st.markdown('<div class="hero-subtitle">Live meteorological intelligence, refined</div>', unsafe_allow_html=True)
 
     api_key = get_api_key()
-    unsplash_key = get_unsplash_key()
     if not api_key:
         st.warning("Enter your free OpenWeatherMap API key in the sidebar to fetch live forecasts.")
         return
@@ -1046,7 +985,7 @@ def page_home():
     weather_category = get_weather_category(weather_block.get("id"))
     is_day = compute_is_day(current)
     local_time_str = get_local_time_str(current)
-    apply_dynamic_weather_background(weather_category, is_day, geo.get("name", active_city), unsplash_key)
+    apply_dynamic_weather_background(weather_category, is_day)
 
     t_curr = main_block.get("temp", 0.0)
     t_feels = main_block.get("feels_like", 0.0)
@@ -1215,6 +1154,7 @@ def page_home():
 # ---------------- PAGE: ABOUT ----------------
 def page_about():
     apply_custom_styles()
+    apply_active_weather_background()
 
     st.markdown('<div class="hero-title">About the Project</div>', unsafe_allow_html=True)
     st.markdown('<div class="hero-subtitle">Design philosophy &amp; technical overview</div>', unsafe_allow_html=True)
@@ -1241,6 +1181,7 @@ def page_about():
 # ---------------- PAGE: CONTACT ----------------
 def page_contact():
     apply_custom_styles()
+    apply_active_weather_background()
 
     st.markdown('<div class="hero-title">Connect</div>', unsafe_allow_html=True)
     st.markdown('<div class="hero-subtitle">Collaboration &amp; feedback channels</div>', unsafe_allow_html=True)
